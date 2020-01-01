@@ -11,10 +11,10 @@
 def create_workflow_summary(summary) {
     def yaml_file = workDir.resolve('workflow_summary_mqc.yaml')
     yaml_file.text  = """
-    id: 'MY_PIPELINE-summary'
+    id: 'illumina-HPV-summary'
     description: " - this information is collected when the pipeline is started."
     section_name: 'Workflow Summary'
-    section_href: 'https://gitlab.com/MY_PIPELINE'
+    section_href: 'https://gitlab.com/data-analysis/illumina-hpv'
     plot_type: 'html'
     data: |
         <dl class=\"dl-horizontal\">
@@ -51,9 +51,9 @@ process get_software_versions {
 workflow.onComplete {
 
     // Set up the e-mail variables
-    def subject = "[MY_PIPELINE] Successful: $workflow.runName"
+    def subject = "[Illumina HPV] Successful: $workflow.runName"
     if(!workflow.success){
-      subject = "[MY_PIPELINE] FAILED: $workflow.runName"
+      subject = "[Illumina HPV] FAILED: $workflow.runName"
     }
     def email_fields = [:]
     email_fields['version'] = workflow.manifest.version
@@ -101,11 +101,11 @@ workflow.onComplete {
           if( params.plaintext_email ){ throw GroovyException('Send plaintext e-mail, not HTML') }
           // Try to send HTML e-mail using sendmail
           [ 'sendmail', '-t' ].execute() << sendmail_html
-          log.info "[MY_PIPELINE] Sent summary e-mail to $params.email (sendmail)"
+          log.info "[Illumina HPV] Sent summary e-mail to $params.email (sendmail)"
         } catch (all) {
           // Catch failures and try with plaintext
           [ 'mail', '-s', subject, params.email ].execute() << email_txt
-          log.info "[MY_PIPELINE] Sent summary e-mail to $params.email (mail)"
+          log.info "[Illumina HPV] Sent summary e-mail to $params.email (mail)"
         }
     }
 
@@ -119,6 +119,6 @@ workflow.onComplete {
     def output_tf = new File( output_d, "pipeline_report.txt" )
     output_tf.withWriter { w -> w << email_txt }
 
-    log.info "[MY_PIPELINE] Pipeline Complete"
+    log.info "[Illumina HPV] Pipeline Complete"
 }
 

@@ -1,4 +1,4 @@
-name: MY_PIPELINE-1.0dev
+name: nf-CRISPR-1.0dev
 channels:
   - conda-forge
   - bioconda
@@ -6,4 +6,7 @@ channels:
 dependencies:
   # Add required software dependencies here
   - fastqc=0.11.8
-  - multiqc=1.6
+  - python=2.7.15
+  - monotonic=1.5
+  - multiqc=1.8
+  - r-base=3.6.2
