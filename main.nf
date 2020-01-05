@@ -31,13 +31,14 @@ def helpMessage() {
 
     Usage:
 
-    nextflow run main.nf --reads '*_R{1,2}.fastq.gz' --genome 'hg38' -profile curie
-    nextflow run main.nf --samplePlan sample_plan.csv --genome hg38 -profile curie
+    nextflow run main.nf -profile test
+    nextflow run main.nf --reads '*_R{1,2}.fastq.gz' -profile curie
+    nextflow run main.nf --samplePlan sample_plan.csv -profile curie
 
     Mandatory arguments:
       --reads                       Path to input data (must be surrounded with quotes)
       --samplePlan                  Path to sample plan file if '--reads' is not specified
-      --genome                      Name of iGenomes reference
+      --csv                      Name of iGenomes reference
       -profile                      Configuration profile to use. Can use multiple (comma separated)
                                     Available: conda, singularityPath, cluster, test and more.
 
@@ -45,7 +46,7 @@ def helpMessage() {
       --singleEnd                   Specifies that the input is single end reads
 
     Genome References:              If not specified in the configuration file or you wish to overwrite any of the references.
-      --genome                      Name of iGenomes reference
+      --csv                      Name of iGenomes reference
       --fasta                       Path to Fasta reference (.fasta)
 
     Library References:
@@ -164,45 +165,33 @@ if (params.samplePlan){
   }
 }
 
+reads_fastqc.into { reads_fastqc; reads_gunzip }
+
 /*
  * Other input channels
  */
 
-// Reference genome
+// Reference library
 
-if ( params.fasta ) {
-   lastPath = params.fasta.lastIndexOf(File.separator)
-   ref_bwt2_base = params.fasta.substring(lastPath+1)
+if ( params.csv ) {
+   lastPath = params.csv.lastIndexOf(File.separator)
+   library_base = params.fasta.substring(lastPath+1)
 
-   Channel.fromPath( params.fasta )
-        .ifEmpty { exit 1, "Genome index: Fasta file not found: ${params.fasta}" }
-        .set { reference_fasta_for_index }
+   Channel.fromPath( params.csv )
+        .ifEmpty { exit 1, "Reference library: CSV file not found: ${params.csv}" }
+        .set { library_csv }
 }
 else {
-   exit 1, "No reference genome specified!"
-}
-
-//HPV genome
-
-if ( params.fasta_hpv ){
-   lastPath = params.fasta_hpv.lastIndexOf(File.separator)
-   hpv_bwt2_base = params.fasta_hpv.substring(lastPath+1) - ~/(\.fa)?(\.fasta)?(\.fas)?$/
-
-   Channel.fromPath( params.fasta_hpv )
-        .ifEmpty { exit 1, "HPV index: Fasta file not found: ${params.fasta_hpv}" }
-        .set { hpv_fasta_for_index }
-}
-else{
-   exit 1, "No HPV genome specified!"
+   exit 1, "No reference library specified!"
 }
 
 // Header log info
 log.info """=======================================================
 
-HPV v${workflow.manifest.version}"
+CRISPR v${workflow.manifest.version}"
 ======================================================="""
 def summary = [:]
-summary['Pipeline Name']  = 'HPV'
+summary['Pipeline Name']  = 'CRISPR'
 summary['Pipeline Version'] = workflow.manifest.version
 summary['Run Name']     = custom_runName ?: workflow.runName
 if (params.samplePlan) {
@@ -237,8 +226,8 @@ log.info "========================================="
  */
 process fastqc {
     tag "$name"
-    publishDir "${params.outdir}/fastqc", mode: 'copy',
-        saveAs: {filename -> filename.indexOf(".zip") > 0 ? "zips/$filename" : "$filename"}
+    conda "/bioinfo/local/build/Centos/envs_conda/nf-CRISPR-1.0dev"
+    publishDir "${params.outdir}/fastqc", mode: 'copy'
    
     when:
     !params.skip_fastqc
@@ -256,11 +245,63 @@ process fastqc {
     """
 }
 
+
+/*
+ * Gunzip
+ */
+process gunzip {
+    tag "$name"
+    conda "/bioinfo/local/build/Centos/envs_conda/nf-CRISPR-1.0dev"
+    publishDir "${params.outdir}/gunzip", mode: 'copy'
+
+    when:
+    !params.skip_fastqc
+
+    input:
+    set val(name), file(reads) from reads_gunzip
+
+    output:
+    set val(prefix), file("${prefix}.R1.fastq") into reads_gunzipped
+
+    script:
+    prefix= reads.toString() - ~/(.R1.fastq.gz)?$/
+    """
+    gunzip -c -f $reads >${prefix}.R1.fastq
+    """
+}
+
+
+/*
+ * Counting
+ */
+
+process Counting {
+  tag "$prefix"
+  conda "/bioinfo/local/build/Centos/envs_conda/nf-CRISPR-1.0dev"
+  publishDir "${params.outdir}/counting", mode: 'copy'
+
+  input:
+  set val(prefix), file(reads) from reads_gunzipped
+  file(library) from library_csv.collect()
+
+  output:
+  set val(prefix), file("${prefix}.counts") into ch_counts
+  set val(prefix), file("${prefix}.stats") into ch_stats
+
+  script:
+  """
+  count_spacers_enhanced_20180627_20bp.py -f $reads -o $prefix -i $library
+  """
+}
+
+
 /*
 /* MultiQC
  */
 
 process get_software_versions {
+
+    conda "/bioinfo/local/build/Centos/envs_conda/nf-CRISPR-1.0dev"
 
     output:
     file 'software_versions_mqc.yaml' into software_versions_yaml
