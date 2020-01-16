@@ -169,37 +169,54 @@ def count_spacers(input_file, fastq_file, output_prefix, sensitive):
 	out_stats = output_prefix + ".stats"
 	out_stringent_stats = output_prefix + ".stats.stringent"
 	out_fuzzykey_stats = output_prefix + ".stats.fuzzykey"
-	with open(out_stats, 'w') as infile:
-		infile.write('Num Reads:' + str(num_reads) + '\n')
-		infile.write('Num Reads with guide:' + str(dict_counter) + '\n')
-		percent_mapped = round(dict_counter / float(num_reads) * 100, 1)
-		infile.write('Perc Mapped reads:' + str(percent_mapped) + '\n')
-		percent_zero_guides = round((len(dictionary.values()) - np.count_nonzero(dictionary.values())) / float(len(dictionary.values())) * 100, 1)
-		infile.write('Perc Undetected guides:' + str(percent_zero_guides) + '\n')
-		infile.write('Skew ratio:' + str(skew_ratio) + '\n')
-		infile.write('sgRNA library size:' + str(len(dictionary)) + '\n')
+	header = 'sample_name' + ',' + 'num_reads' + ',' + 'num_reads_with_guide' + ',' + \
+                 'perc_mapped_reads' + ',' + 'perc_undetected_guides' + ',' + 'skew_ratio' + ',' + 'sgRNA_library_size'
+        with open(out_stats, 'w') as infile:
+                percent_mapped = round(dict_counter / float(num_reads) * 100, 1)
+                percent_zero_guides = round((len(dictionary.values()) - np.count_nonzero(dictionary.values())) / float(len(dictionary.values())) * 100, 1)
+                infile.write(header + '\n')
+                infile.write(str(output_prefix) + ',' + str(num_reads) + ',' + str(dict_counter) + ',' + str(percent_mapped) + ',' + \
+                             str(percent_zero_guides) + ',' + str(skew_ratio) + ',' + str(len(dictionary)) + '\n')
+		#infile.write('num_reads,' + str(num_reads) + '\n')
+		#infile.write('num_neads_with_guide,' + str(dict_counter) + '\n')
+		#percent_mapped = round(dict_counter / float(num_reads) * 100, 1)
+		#infile.write('perc_mapped_reads,' + str(percent_mapped) + '\n')
+		#percent_zero_guides = round((len(dictionary.values()) - np.count_nonzero(dictionary.values())) / float(len(dictionary.values())) * 100, 1)
+		#infile.write('perc_undetected_guides,' + str(percent_zero_guides) + '\n')
+		#infile.write('skew_ratio,' + str(skew_ratio) + '\n')
+		#infile.write('sgRNA_library_size,' + str(len(dictionary)) + '\n')
 		infile.close()
 
 	with open(out_stringent_stats, 'w') as infile:
-		infile.write('Num Reads:' + str(num_reads) + '\n')
-		infile.write('Num Reads with guide:' + str(dict_counter_stringent) + '\n')
-		percent_mapped = round(dict_counter_stringent / float(num_reads) * 100, 1)
-		infile.write('Perc Mapped reads:' + str(percent_mapped) + '\n')
-		percent_zero_guides = round((len(dictionary_stringent.values()) - np.count_nonzero(dictionary_stringent.values())) / float(len(dictionary_stringent.values())) * 100, 1)
-		infile.write('Perc Undetected guides:' + str(percent_zero_guides) + '\n')
-		infile.write('Skew ratio:' + str(skew_ratio) + '\n')
-		infile.write('sgRNA library size:' + str(len(dictionary_stringent)) + '\n')
-		infile.close()
+                percent_mapped = round(dict_counter_stringent / float(num_reads) * 100, 1)
+                percent_zero_guides = round((len(dictionary_stringent.values()) - np.count_nonzero(dictionary_stringent.values())) / float(len(dictionary_stringent.values())) * 100, 1)
+                infile.write(header + '\n')
+                infile.write(str(output_prefix) + ',' + str(num_reads) + ',' + str(dict_counter_stringent) + ',' + str(percent_mapped) + ',' + \
+                             str(percent_zero_guides) + ',' + str(skew_ratio) + ',' + str(len(dictionary_stringent)) + '\n')
+                #infile.write('num_reads,' + str(num_reads) + '\n')
+		#infile.write('num_reads_with_guide,' + str(dict_counter_stringent) + '\n')
+		#percent_mapped = round(dict_counter_stringent / float(num_reads) * 100, 1)
+		#infile.write('perc_mapped_reads,' + str(percent_mapped) + '\n')
+		#percent_zero_guides = round((len(dictionary_stringent.values()) - np.count_nonzero(dictionary_stringent.values())) / float(len(dictionary_stringent.values())) * 100, 1)
+		#infile.write('perc_undetected_guides,' + str(percent_zero_guides) + '\n')
+		#infile.write('skew_ratio,' + str(skew_ratio) + '\n')
+		#infile.write('sgRNA_library_size,' + str(len(dictionary_stringent)) + '\n')
+		#infile.close()
 
 	with open(out_fuzzykey_stats, 'w') as infile:
-		infile.write('Num Reads:' + str(num_reads) + '\n')
-		infile.write('Num Reads with guide:' + str(dict_counter_fuzzykey) + '\n')
-		percent_mapped = round(dict_counter_fuzzykey / float(num_reads) * 100, 1)
-		infile.write('Perc Mapped reads:' + str(percent_mapped) + '\n')
-		percent_zero_guides = round((len(dictionary_fuzzykey.values()) - np.count_nonzero(dictionary_fuzzykey.values())) / float(len(dictionary_fuzzykey.values())) * 100, 1)
-		infile.write('Perc Undetected guides:' + str(percent_zero_guides) + '\n')
-		infile.write('Skew ratio:' + str(skew_ratio) + '\n')
-		infile.write('sgRNA library size:' + str(len(dictionary_fuzzykey)) + '\n')
+                percent_mapped = round(dict_counter_fuzzykey / float(num_reads) * 100, 1)
+                percent_zero_guides = round((len(dictionary_fuzzykey.values()) - np.count_nonzero(dictionary_fuzzykey.values())) / float(len(dictionary_fuzzykey.values())) * 100, 1)
+                infile.write(header + '\n')
+                infile.write(str(output_prefix) + ',' + str(num_reads) + ',' + str(dict_counter_stringent) + ',' + str(percent_mapped) + ',' + \
+                             str(percent_zero_guides) + ',' + str(skew_ratio) + ',' + str(len(dictionary_stringent)) + '\n')
+ 		#infile.write('num_reads,' + str(num_reads) + '\n')
+		#infile.write('num_reads_with_guide,' + str(dict_counter_fuzzykey) + '\n')
+		#percent_mapped = round(dict_counter_fuzzykey / float(num_reads) * 100, 1)
+		#infile.write('perc_mapped_reads,' + str(percent_mapped) + '\n')
+		#percent_zero_guides = round((len(dictionary_fuzzykey.values()) - np.count_nonzero(dictionary_fuzzykey.values())) / float(len(dictionary_fuzzykey.values())) * 100, 1)
+		#infile.write('perc_undetected_guides,' + str(percent_zero_guides) + '\n')
+		#infile.write('skew_ratio,' + str(skew_ratio) + '\n')
+		#infile.write('sgRNA_library_size,' + str(len(dictionary_fuzzykey)) + '\n')
 		infile.close()
 
 	handle.close()

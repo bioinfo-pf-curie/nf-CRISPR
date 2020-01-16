@@ -24,6 +24,11 @@ This script is based on the nf-core guidelines. See https://nf-co.re/ for more i
 
 
 def helpMessage() {
+    if ("${workflow.manifest.version}" =~ /dev/ ){
+       dev_mess = file("$baseDir/assets/dev_message.txt")
+       log.info dev_mess.text
+    }
+
     log.info"""
     
     nf-CRISPR v${workflow.manifest.version}
@@ -38,19 +43,15 @@ def helpMessage() {
     Mandatory arguments:
       --reads                       Path to input data (must be surrounded with quotes)
       --samplePlan                  Path to sample plan file if '--reads' is not specified
-      --csv                      Name of iGenomes reference
+      --csv                         Library description file
       -profile                      Configuration profile to use. Can use multiple (comma separated)
-                                    Available: conda, singularityPath, cluster, test and more.
+                                    Configuration profile to use. test / conda / toolsPath / singularity / cluster (see below).
 
     Options:
       --singleEnd                   Specifies that the input is single end reads
 
     Genome References:              If not specified in the configuration file or you wish to overwrite any of the references.
-      --csv                      Name of iGenomes reference
       --fasta                       Path to Fasta reference (.fasta)
-
-    Library References:
-      --fasta_hpv                   Path to Fasta HPV reference (.fasta)                 
 
     Other options:
       --skip_fastqc                 Skip quality controls on sequencing reads
@@ -58,6 +59,15 @@ def helpMessage() {
       --outdir                      The output directory where the results will be saved
       --email                       Set this parameter to your e-mail address to get a summary e-mail with details of the run sent to you when the workflow exits
       -name                         Name for the pipeline run. If not specified, Nextflow will automatically generate a random mnemonic.
+ 
+   =======================================================
+    Available Profiles
+
+      -profile test                Set up the test dataset
+      -profile conda               Build a new conda environment before running the pipeline
+      -profile toolsPath           Use the paths defined in configuration for each tool
+      -profile singularity         Use the Singularity images for each process
+      -profile cluster             Run the workflow on the cluster, instead of locally
 
     """.stripIndent()
 }
@@ -77,13 +87,6 @@ if (params.help){
 
 params.fasta = params.genome ? params.genomes[ params.genome ].fasta ?: false : false
 
-params.fasta_hpv = params.fasta_hpv ?: params.genomes['HPV'].fasta ?: false
-
-params.genes_hpv = params.genomes['HPV'].genes ?: false
-params.fasta_ctrl = params.genomes['HPV'].ctrl_capture ?: false
-
-
-
 // Has the run name been specified by the user?
 //  this has the bonus effect of catching both -name and --name
 custom_runName = params.name
@@ -94,11 +97,15 @@ if( !(workflow.runName ==~ /[a-z]+_[a-z]+/) ){
 // Stage config files
 ch_multiqc_config = Channel.fromPath(params.multiqc_config)
 ch_output_docs = Channel.fromPath("$baseDir/docs/output.md")
-ch_fasta_ctrl = Channel.fromPath(params.fasta_ctrl)
 
 /*
  * CHANNELS
  */
+
+// Reference library
+Channel.fromPath( params.csv )
+       .ifEmpty { exit 1, "Reference library: CSV file not found: ${params.csv}" }
+       .set { library_csv }
 
 /*
  * Create a channel for input read files
@@ -109,14 +116,14 @@ if(params.samplePlan){
       Channel
          .from(file("${params.samplePlan}"))
          .splitCsv(header: false)
-         .map{ row -> [ row[1], [file(row[2])]] }
-         .set {reads_fastqc}
+         .map{ row -> [ row[0], [file(row[2])]] }
+         .into {reads_fastqc; reads_gunzip}
    }else{
       Channel
          .from(file("${params.samplePlan}"))
          .splitCsv(header: false)
-         .map{ row -> [ row[1], [file(row[2]), file(row[3])]] }
-         .set {reads_fastqc}
+         .map{ row -> [ row[0], [file(row[2]), file(row[3])]] }
+         .into {reads_fastqc; reads_gunzip}
    }
    params.reads=false
 }
@@ -126,19 +133,19 @@ else if(params.readPaths){
             .from(params.readPaths)
             .map { row -> [ row[0], [file(row[1][0])]] }
             .ifEmpty { exit 1, "params.readPaths was empty - no input files supplied" }
-            .set {reads_fastqc}
+            .into {reads_fastqc; reads_gunzip}
     } else {
         Channel
             .from(params.readPaths)
             .map { row -> [ row[0], [file(row[1][0]), file(row[1][1])]] }
             .ifEmpty { exit 1, "params.readPaths was empty - no input files supplied" }
-            .set {reads_fastqc}
+            .into {reads_fastqc; reads_gunzip}
     }
 } else {
     Channel
         .fromFilePairs( params.reads, size: params.singleEnd ? 1 : 2 )
         .ifEmpty { exit 1, "Cannot find any reads matching: ${params.reads}\nNB: Path needs to be enclosed in quotes!\nNB: Path requires at least one * wildcard!\nIf this is single-end data, please specify --singleEnd on the command line." }
-        .set {reads_fastqc}
+        .into {reads_fastqc; reads_gunzip}
 }
 
 /*
@@ -165,24 +172,10 @@ if (params.samplePlan){
   }
 }
 
-reads_fastqc.into { reads_fastqc; reads_gunzip }
-
-/*
- * Other input channels
- */
-
-// Reference library
-
-if ( params.csv ) {
-   lastPath = params.csv.lastIndexOf(File.separator)
-   library_base = params.fasta.substring(lastPath+1)
-
-   Channel.fromPath( params.csv )
-        .ifEmpty { exit 1, "Reference library: CSV file not found: ${params.csv}" }
-        .set { library_csv }
-}
-else {
-   exit 1, "No reference library specified!"
+// Header log info
+if ("${workflow.manifest.version}" =~ /dev/ ){
+   dev_mess = file("$baseDir/assets/dev_message.txt")
+   log.info dev_mess.text
 }
 
 // Header log info
@@ -199,8 +192,8 @@ if (params.samplePlan) {
 }else{
    summary['Reads']        = params.reads
 }
+summary['Library']      = params.csv
 summary['Fasta Ref']    = params.fasta
-summary['Fasta HPV']    = params.fasta_hpv
 summary['Max Memory']   = params.max_memory
 summary['Max CPUs']     = params.max_cpus
 summary['Max Time']     = params.max_time
@@ -254,9 +247,6 @@ process gunzip {
     conda "/bioinfo/local/build/Centos/envs_conda/nf-CRISPR-1.0dev"
     publishDir "${params.outdir}/gunzip", mode: 'copy'
 
-    when:
-    !params.skip_fastqc
-
     input:
     set val(name), file(reads) from reads_gunzip
 
@@ -286,11 +276,11 @@ process Counting {
 
   output:
   set val(prefix), file("${prefix}.counts") into ch_counts
-  set val(prefix), file("${prefix}.stats") into ch_stats
+  file("${prefix}.stats") into ch_stats
 
   script:
   """
-  count_spacers_enhanced_20180627_20bp.py -f $reads -o $prefix -i $library
+  count_spacers.py -f $reads -o $prefix -i $library
   """
 }
 
@@ -300,45 +290,166 @@ process Counting {
  */
 
 process get_software_versions {
+  conda "/bioinfo/local/build/Centos/envs_conda/nf-CRISPR-1.0dev"
 
-    conda "/bioinfo/local/build/Centos/envs_conda/nf-CRISPR-1.0dev"
+  output:
+  file 'software_versions_mqc.yaml' into software_versions_yaml
+
+  script:
+  """
+  echo $workflow.manifest.version > v_pipeline.txt
+  echo $workflow.nextflow.version > v_nextflow.txt
+  fastqc --version > v_fastqc.txt
+  python --version 2> v_python.txt
+  multiqc --version > v_multiqc.txt
+  scrape_software_versions.py > software_versions_mqc.yaml
+  """
+}
+
+process workflow_summary_mqc {
+  when:
+  !params.skip_multiqc
+
+  output:
+  file 'workflow_summary_mqc.yaml' into workflow_summary_yaml
+
+  exec:
+  def yaml_file = task.workDir.resolve('workflow_summary_mqc.yaml')
+  yaml_file.text  = """
+  id: 'summary'
+  description: " - this information is collected when the pipeline is started."
+  section_name: 'Workflow Summary'
+  section_href: 'https://gitlab.curie.fr/rnaseq'
+  plot_type: 'html'
+  data: |
+      <dl class=\"dl-horizontal\">
+${summary.collect { k,v -> "            <dt>$k</dt><dd><samp>${v ?: '<span style=\"color:#999999;\">N/A</a>'}</samp></dd>" }.join("\n")}
+      </dl>
+  """.stripIndent()
+}
+
+process multiqc {
+  publishDir "${params.outdir}/MultiQC/", mode: 'copy'
+
+  when:
+  !params.skip_multiqc
+
+  input:
+  file splan from ch_splan.first()
+  file multiqc_config from ch_multiqc_config
+  file('fastqc/*') from fastqc_results.map{items->items[1]}.collect().ifEmpty([])
+  file('stats/*') from ch_stats.collect()
+  file ('software_versions/*') from software_versions_yaml.collect()
+  file ('workflow_summary/*') from workflow_summary_yaml.collect()
+ 
+  output:
+  file splan
+  file "*report.html" into multiqc_report
+  file "*_data"
+
+  script:
+  rtitle = custom_runName ? "--title \"$custom_runName\"" : ''
+  rfilename = custom_runName ? "--filename " + custom_runName + "_crispr_report" : "--filename crispr_report"
+  metadata_opts = params.metadata ? "--metadata ${metadata}" : ""
+  splan_opts = params.samplePlan ? "--splan ${params.samplePlan}" : ""
+  """	
+  mqc_header.py --name "CRISPR" --version ${workflow.manifest.version} ${metadata_opts} ${splan_opts} > multiqc-config-header.yaml
+  multiqc . -f $rtitle $rfilename -m fastqc -m custom_content -c multiqc-config-header.yaml -c $multiqc_config
+  """
+}
+
+/*
+ * Sub-routine
+ */
+process output_documentation {
+    publishDir "${params.outdir}/pipeline_info", mode: 'copy'
+
+    input:
+    file output_docs from ch_output_docs
 
     output:
-    file 'software_versions_mqc.yaml' into software_versions_yaml
+    file "results_description.html"
 
     script:
     """
-    echo $workflow.manifest.version > v_pipeline.txt
-    echo $workflow.nextflow.version > v_nextflow.txt
-    fastqc --version > v_fastqc.txt
-    python --version 2> v_python.txt
-    multiqc --version > v_multiqc.txt
-    scrape_software_versions.py > software_versions_mqc.yaml
+    markdown_to_html.r $output_docs results_description.html
     """
-   }
+}
 
-   process multiqc_allsamples {
-     publishDir "${params.outdir}/MultiQC/", mode: 'copy'
+workflow.onComplete {
 
-     when:
-     !params.skip_multiqc
+    /*pipeline_report.html*/
 
-     input:
-     file splan from ch_splan.first()
-     file('fastqc/*') from fastqc_results.map{items->items[1]}.collect().ifEmpty([])
-  
-     file ('software_versions/*') from software_versions_yaml.collect()
-     // file ('workflow_summary/*') from workflow_summary_yaml.collect()
+    def report_fields = [:]
+    report_fields['version'] = workflow.manifest.version
+    report_fields['runName'] = custom_runName ?: workflow.runName
+    report_fields['success'] = workflow.success
+    report_fields['dateComplete'] = workflow.complete
+    report_fields['duration'] = workflow.duration
+    report_fields['exitStatus'] = workflow.exitStatus
+    report_fields['errorMessage'] = (workflow.errorMessage ?: 'None')
+    report_fields['errorReport'] = (workflow.errorReport ?: 'None')
+    report_fields['commandLine'] = workflow.commandLine
+    report_fields['projectDir'] = workflow.projectDir
+    report_fields['summary'] = summary
+    report_fields['summary']['Date Started'] = workflow.start
+    report_fields['summary']['Date Completed'] = workflow.complete
+    report_fields['summary']['Pipeline script file path'] = workflow.scriptFile
+    report_fields['summary']['Pipeline script hash ID'] = workflow.scriptId
+    if(workflow.repository) report_fields['summary']['Pipeline repository Git URL'] = workflow.repository
+    if(workflow.commitId) report_fields['summary']['Pipeline repository Git Commit'] = workflow.commitId
+    if(workflow.revision) report_fields['summary']['Pipeline Git branch/tag'] = workflow.revision
+
+    // Render the TXT template
+    def engine = new groovy.text.GStringTemplateEngine()
+    def tf = new File("$baseDir/assets/oncomplete_template.txt")
+    def txt_template = engine.createTemplate(tf).make(report_fields)
+    def report_txt = txt_template.toString()
+    
+    // Render the HTML template
+    def hf = new File("$baseDir/assets/oncomplete_template.html")
+    def html_template = engine.createTemplate(hf).make(report_fields)
+    def report_html = html_template.toString()
+
+    // Write summary e-mail HTML to a file
+    def output_d = new File( "${params.outdir}/pipeline_info/" )
+    if( !output_d.exists() ) {
+      output_d.mkdirs()
+    }
+    def output_hf = new File( output_d, "pipeline_report.html" )
+    output_hf.withWriter { w -> w << report_html }
+    def output_tf = new File( output_d, "pipeline_report.txt" )
+    output_tf.withWriter { w -> w << report_txt }
+
+    /*oncomplete file*/
+
+    File woc = new File("${params.outdir}/workflow.oncomplete.txt")
+    Map endSummary = [:]
+    endSummary['Completed on'] = workflow.complete
+    endSummary['Duration']     = workflow.duration
+    endSummary['Success']      = workflow.success
+    endSummary['exit status']  = workflow.exitStatus
+    endSummary['Error report'] = workflow.errorReport ?: '-'
+    String endWfSummary = endSummary.collect { k,v -> "${k.padRight(30, '.')}: $v" }.join("\n")
+    println endWfSummary
+    String execInfo = "${fullSum}\nExecution summary\n${logSep}\n${endWfSummary}\n${logSep}\n"
+    woc.write(execInfo)
+
+    /*final logs*/
+    if(workflow.success){
+        log.info "[rnaseq] Pipeline Complete"
+    }else{
+        log.info "[rnaseq] FAILED: $workflow.runName"
+        if( workflow.profile == 'test'){
+            log.error "====================================================\n" +
+                    "  WARNING! You are running with the profile 'test' only\n" +
+                    "  pipeline config profile, which runs on the head node\n" +
+                    "  and assumes all software is on the PATH.\n" +
+                    "  This is probably why everything broke.\n" +
+                    "  Please use `-profile test,conda` or `-profile test,singularity` to run on local.\n" +
+                    "  Please use `-profile test,conda,cluster` or `-profile test,singularity,cluster` to run on your cluster.\n" +
+                    "============================================================"
+        }
+    }
  
-     output:
-     file splan
-     file "*multiqc_report.html" into multiqc_report
-     file "*_data"
-
-     script:
-     rtitle = custom_runName ? "--title \"$custom_runName\"" : ''
-     rfilename = custom_runName ? "--filename " + custom_runName.replaceAll('\\W','_').replaceAll('_+','_') + "_multiqc_report" : ''
-     """	
-     multiqc . -f $rtitle $rfilename -m fastqc -m custom_content
-     """
-   }
+}
