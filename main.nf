@@ -265,7 +265,7 @@ process gunzip {
  * Counting
  */
 
-process Counting {
+process counts {
   tag "$prefix"
   conda "/bioinfo/local/build/Centos/envs_conda/nf-CRISPR-1.0dev"
   publishDir "${params.outdir}/counts", mode: 'copy'
@@ -275,7 +275,7 @@ process Counting {
   file(library) from library_csv.collect()
 
   output:
-  set val(prefix), file("${prefix}.counts") into counts_to_merge
+  file("${prefix}.counts") into counts_to_merge
   file("${prefix}.stats") into ch_stats
 
   script:
@@ -284,14 +284,16 @@ process Counting {
   """
 }
 
-/*
-process merge_counts {
-  conda "/bioinfo/local/build/Centos/envs_conda/nf-CRISPR-1.0dev"
+
+process mergeCounts {
 
   publishDir "${params.outdir}/counts", mode: 'copy'
 
   input:
   file input_counts from counts_to_merge.collect()
+
+  output:
+  file "tablecounts_raw.csv"
 
   script:
   """
@@ -299,7 +301,7 @@ process merge_counts {
   makeCountTable.r listofcounts.tsv
   """
 }
-*/
+
 
 
 /*
