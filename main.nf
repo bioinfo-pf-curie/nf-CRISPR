@@ -268,14 +268,14 @@ process gunzip {
 process Counting {
   tag "$prefix"
   conda "/bioinfo/local/build/Centos/envs_conda/nf-CRISPR-1.0dev"
-  publishDir "${params.outdir}/counting", mode: 'copy'
+  publishDir "${params.outdir}/counts", mode: 'copy'
 
   input:
   set val(prefix), file(reads) from reads_gunzipped
   file(library) from library_csv.collect()
 
   output:
-  set val(prefix), file("${prefix}.counts") into ch_counts
+  set val(prefix), file("${prefix}.counts") into counts_to_merge
   file("${prefix}.stats") into ch_stats
 
   script:
@@ -283,6 +283,23 @@ process Counting {
   count_spacers.py -f $reads -o $prefix -i $library
   """
 }
+
+/*
+process merge_counts {
+  conda "/bioinfo/local/build/Centos/envs_conda/nf-CRISPR-1.0dev"
+
+  publishDir "${params.outdir}/counts", mode: 'copy'
+
+  input:
+  file input_counts from counts_to_merge.collect()
+
+  script:
+  """
+  echo -e ${input_counts} | tr " " "\n" > listofcounts.tsv
+  makeCountTable.r listofcounts.tsv
+  """
+}
+*/
 
 
 /*
