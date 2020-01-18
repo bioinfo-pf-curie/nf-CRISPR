@@ -286,7 +286,7 @@ process counts {
 
 
 process mergeCounts {
-
+  conda "/bioinfo/local/build/Centos/envs_conda/nf-CRISPR-1.0dev"
   publishDir "${params.outdir}/counts", mode: 'copy'
 
   input:
@@ -348,6 +348,7 @@ ${summary.collect { k,v -> "            <dt>$k</dt><dd><samp>${v ?: '<span style
 }
 
 process multiqc {
+  conda "/bioinfo/local/build/Centos/envs_conda/nf-CRISPR-1.0dev"
   publishDir "${params.outdir}/MultiQC/", mode: 'copy'
 
   when:
@@ -381,6 +382,7 @@ process multiqc {
  * Sub-routine
  */
 process output_documentation {
+    conda "/bioinfo/local/build/Centos/envs_conda/nf-CRISPR-1.0dev"
     publishDir "${params.outdir}/pipeline_info", mode: 'copy'
 
     input:
