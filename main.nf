@@ -43,7 +43,7 @@ def helpMessage() {
     Mandatory arguments:
       --reads                       Path to input data (must be surrounded with quotes)
       --samplePlan                  Path to sample plan file if '--reads' is not specified
-      --csv                         Library description file
+      --library                     Library type. See --libraryList for more information.
       -profile                      Configuration profile to use. Can use multiple (comma separated)
                                     Configuration profile to use. test / conda / toolsPath / singularity / cluster (see below).
 
@@ -54,6 +54,8 @@ def helpMessage() {
       --fasta                       Path to Fasta reference (.fasta)
 
     Other options:
+      --libraryList                 List the support CRISPR library designs
+      --libraryDesign               Library design file (if not supported in --libraryList)
       --skip_fastqc                 Skip quality controls on sequencing reads
       --skip_multiqc                Skip report
       --outdir                      The output directory where the results will be saved
@@ -72,6 +74,25 @@ def helpMessage() {
     """.stripIndent()
 }
 
+def listLib() {
+
+  log.info"""
+    
+  nf-CRISPR v${workflow.manifest.version}
+  =======================================================
+
+  Available CRISPR Libraries:
+
+  """.stripIndent()
+
+  for ( lib in params.libraries.keySet() ){
+    log.info "Library Name: " + lib
+    log.info "Description: " + params.libraries[lib].description
+    log.info "Design: " + params.libraries[lib].design
+    log.info "\n"
+  }
+}
+
 /*
  * SET UP CONFIGURATION VARIABLES
  */
@@ -81,10 +102,16 @@ if (params.help){
     helpMessage()
     exit 0
 }
+if (params.libraryList){
+    listLib()
+    exit 0
+}
 
 // Configure reference genomes
 // Reference index path configuration
-
+if (params.genomes && params.genome && !params.genomes.containsKey(params.genome)) {
+   exit 1, "The provided genome '${params.genome}' is not available in the genomes file. Currently the available genomes are ${params.genomes.keySet().join(", ")}"
+}
 params.fasta = params.genome ? params.genomes[ params.genome ].fasta ?: false : false
 
 // Has the run name been specified by the user?
@@ -102,10 +129,23 @@ ch_output_docs = Channel.fromPath("$baseDir/docs/output.md")
  * CHANNELS
  */
 
-// Reference library
-Channel.fromPath( params.csv )
-       .ifEmpty { exit 1, "Reference library: CSV file not found: ${params.csv}" }
-       .set { library_csv }
+// Library type
+if (!params.libraryDesign && params.library){
+  if (params.libraries && params.library && !params.libraries.containsKey(params.library)) {
+     exit 1, "The provided library '${params.library}' is not available. See the '--libraryList' or '--libraryDesign' parameters.}"
+  }
+  designPath = params.library ? params.libraries[ params.library ].design ?: false : false
+  Channel.fromPath( designPath )
+      .ifEmpty { exit 1, "Reference library not found: ${designPath}" }
+      .set { library_csv }
+}else if ( params.libraryDesign ){
+  Channel.fromPath( params.libraryDesign )
+      .ifEmpty { exit 1, "Reference library not found: ${params.libraryDesign}" }
+      .set { library_csv }
+}else{
+  exit 1, "No library detected. See the '--libraryList', '--library' or '--libraryDesign' parameters.}"
+}
+
 
 /*
  * Create a channel for input read files
@@ -192,7 +232,14 @@ if (params.samplePlan) {
 }else{
    summary['Reads']        = params.reads
 }
-summary['Library']      = params.csv
+if (params.library){
+   summary['Library Name'] = params.library
+}
+if (params.libraryDesign){
+   summary['Library Design']  = params.libraryDesign
+}else{
+   summary['Library Design']  = designPath
+}
 summary['Fasta Ref']    = params.fasta
 summary['Max Memory']   = params.max_memory
 summary['Max CPUs']     = params.max_cpus
