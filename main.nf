@@ -47,9 +47,6 @@ def helpMessage() {
       -profile                      Configuration profile to use. Can use multiple (comma separated)
                                     Configuration profile to use. test / conda / toolsPath / singularity / cluster (see below).
 
-    Options:
-      --singleEnd                   Specifies that the input is single end reads
-
     Genome References:              If not specified in the configuration file or you wish to overwrite any of the references.
       --fasta                       Path to Fasta reference (.fasta)
 
