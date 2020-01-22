@@ -95,7 +95,8 @@ def count_spacers(input_file, fastq_file, output_prefix, reverse_count):
 	csvfile.close()
 
 	if (perfect_matches + non_perfect_matches) == 0:
-		print >> sys.stderr, "Error : no match detected. Please check if this is a forward or a reverse library !"
+		print >> sys.stderr, "Error : no match detected. Please check if this is a 'forward' or a 'reverse' library !"
+		sys.exit(-1)
 
 
 	# percentage of guides that matched perfectly
