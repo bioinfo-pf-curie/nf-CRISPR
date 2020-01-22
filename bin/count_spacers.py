@@ -21,7 +21,7 @@ def reverse_complement(seq):
 		bases = bases.replace(v,k)
 	return bases
 
-def count_spacers(input_file, fastq_file, output_prefix):
+def count_spacers(input_file, fastq_file, output_prefix, reverse_count):
 	"""
 	creates a dictionary with guide counts from fastq_file, writes to output_prefix
 	fastq_file: forward read fastq file
@@ -70,10 +70,17 @@ def count_spacers(input_file, fastq_file, output_prefix):
 			guide = read_sequence[i:i+20]
 			guide_revcomp = reverse_complement(guide)
 			primer = read_sequence[i-19:i]
-			if guide_revcomp in dictionary:
-				dictionary[guide_revcomp] += 1
-				dict_counter += 1
-				perfect_matches += 1
+			if reverse_count:
+				if guide_revcomp in dictionary:
+					dictionary[guide_revcomp] += 1
+					dictionary[guide] += 1
+					dict_counter += 1
+					perfect_matches += 1
+			else:
+				if guide in dictionary:
+					dictionary[guide] += 1
+					dict_counter += 1
+					perfect_matches += 1
 
 	# create ordered dictionary with guides and respective counts and output as a csv file
 	dict_sorted = OrderedDict(sorted(dictionary.items(), key=lambda t: t[0]))
@@ -86,6 +93,10 @@ def count_spacers(input_file, fastq_file, output_prefix):
 			guidename = dict_guidename[guide]
 			mywriter.writerow([guidename, guide, genename, count])
 	csvfile.close()
+
+	if (perfect_matches + non_perfect_matches) == 0:
+		print >> sys.stderr, "Error : no match detected. Please check if this is a forward or a reverse library !"
+
 
 	# percentage of guides that matched perfectly
 	percent_mapped = round(perfect_matches / float(perfect_matches + non_perfect_matches) * 100, 1)
@@ -126,6 +137,8 @@ if __name__ == '__main__':
 						help='output prefix for result files (Mandatory)', required=True)
 	parser.add_argument('-i', '--input', type=str, dest='input_file',
 						help='input file name (Mandatory)', required=True)
+	parser.add_argument('-r', '--reverse', action="store_true")
+
 	args = parser.parse_args()
 
-	count_spacers(args.input_file, args.fastq_file, args.output_prefix)
+	count_spacers(args.input_file, args.fastq_file, args.output_prefix, args.reverse)

@@ -43,21 +43,22 @@ def helpMessage() {
     Mandatory arguments:
       --reads                       Path to input data (must be surrounded with quotes)
       --samplePlan                  Path to sample plan file if '--reads' is not specified
-      --library                     Library type. See --libraryList for more information.
+      --library                     Library type. See --libraryList for more information
       -profile                      Configuration profile to use. Can use multiple (comma separated)
-                                    Configuration profile to use. test / conda / toolsPath / singularity / cluster (see below).
+                                    Configuration profile to use. test / conda / toolsPath / singularity / cluster (see below)
 
-    Genome References:              If not specified in the configuration file or you wish to overwrite any of the references.
+    Genome References:              If not specified in the configuration file or you wish to overwrite any of the references
       --fasta                       Path to Fasta reference (.fasta)
 
     Other options:
       --libraryList                 List the support CRISPR library designs
       --libraryDesign               Library design file (if not supported in --libraryList)
+      --reverse                     Count guides on the reverse strand. Default is forward
       --skip_fastqc                 Skip quality controls on sequencing reads
       --skip_multiqc                Skip report
       --outdir                      The output directory where the results will be saved
       --email                       Set this parameter to your e-mail address to get a summary e-mail with details of the run sent to you when the workflow exits
-      -name                         Name for the pipeline run. If not specified, Nextflow will automatically generate a random mnemonic.
+      -name                         Name for the pipeline run. If not specified, Nextflow will automatically generate a random mnemonic
  
    =======================================================
     Available Profiles
@@ -238,6 +239,7 @@ if (params.libraryDesign){
    summary['Library Design']  = designPath
 }
 summary['Fasta Ref']    = params.fasta
+summary['Count Strand'] = params.reverse ? "reverse" : "forward"
 summary['Max Memory']   = params.max_memory
 summary['Max CPUs']     = params.max_cpus
 summary['Max Time']     = params.max_time
@@ -323,8 +325,9 @@ process counts {
   file("${prefix}.stats") into ch_stats
 
   script:
+  opts = params.reverse ? "--reverse" : ''
   """
-  count_spacers.py -f $reads -o $prefix -i $library
+  count_spacers.py -f $reads -o $prefix -i $library $opts
   """
 }
 
