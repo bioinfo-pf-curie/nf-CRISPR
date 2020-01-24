@@ -73,7 +73,6 @@ def count_spacers(input_file, fastq_file, output_prefix, reverse_count):
 			if reverse_count:
 				if guide_revcomp in dictionary:
 					dictionary[guide_revcomp] += 1
-					dictionary[guide] += 1
 					dict_counter += 1
 					perfect_matches += 1
 			else:
