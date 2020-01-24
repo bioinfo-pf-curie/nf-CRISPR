@@ -7,18 +7,19 @@
 * [Main arguments](#main-arguments)
     * [`-profile`](#-profile-single-dash)
     * [`--reads`](#--reads)
-	* [`--samplePlan`](#--samplePlan)
-* [Reference genomes](#reference-genomes)
-    * [`--genome`](#--genome)
-    * [`--`]
-* [Tools parameters](#tools-parameters)
+    * [`--samplePlan`](#--samplePlan)
+* [CRISPR Libraries](#crispr-library)
+    * [`--library`](#--library)
+    * [`--libraryList`](#--libraryList)
+    * [`--libraryDesign`](#--libraryDesign)
+    * [`--reverse`](#--reverse)
 * [Job resources](#job-resources)
 * [Automatic resubmission](#automatic-resubmission)
 * [Custom resource requests](#custom-resource-requests)
 * [Other command line parameters](#other-command-line-parameters)
     * [`--skip*`](#--skip*)
-	* [`--metadata`](#--metadta)
-	* [`--outdir`](#--outdir)
+    * [`--metadata`](#--metadta)
+    * [`--outdir`](#--outdir)
     * [`--email`](#--email)
     * [`-name`](#-name-single-dash)
     * [`-resume`](#-resume-single-dash)
@@ -68,8 +69,11 @@ If `-profile` is not specified at all the pipeline will be run locally and expec
     * A generic configuration profile to be used with [conda](https://conda.io/docs/)
     * Pulls most software from [Bioconda](https://bioconda.github.io/)
 * `singularity`
-    * A generic configuration profile to be used with [Singularity](http://singularity.lbl.gov/)
-    * Pulls software from singularity-hub
+    * A generic configuration profile to be used with [Singularity](http://singularity.lbl.gov/) images
+* `toolPaths`
+    * A generic profile that use a path where all tools are expected to be installed. This path is set in the `toolPaths.conf` file.
+* `cluster`
+    * Submit the jobs to the cluster instead of running them locally
 * `test`
     * A profile with a complete configuration for automated testing
     * Includes links to test data so needs no other parameters
@@ -103,71 +107,76 @@ The sample plan is a csv file with the following information :
 Sample ID | Sample Name | Path to R1 fastq file | Path to R2 fastq file
 
 
-## Reference genomes
+## CRISPR Libraries
 
-### `--genome`
-To run the pipeline, you must specify which Humn reference genome to use with the `--genome` flag.
+### `--library`
 
-You can find the keys to specify the genomes in the [genomes config file](../conf/igenomes.config). Common genomes that are supported are:
+By setting the `--library 'LIB_ID'` parameters, the pipeline will used a dedicated library design.  
+The library design files are stored in `assets/libraries/`.
 
-* Human
-  * `--genome hg38`
-* Mouse
-  * `--genome mm10`
+Currently the followinf libraries are supported:
 
-Note that you can use the same configuration setup to save sets of reference files for your own use, even if they are not part of the genomes resource. 
-See the [Nextflow documentation](https://www.nextflow.io/docs/latest/config.html) for instructions on where to save such a file.
+```
+Available CRISPR Libraries:
+Library Name: sabatiniPositiveMouse10
+Description: Librairie Genome-Wide Knockout standard Sabatini Mouse with 10 guides/gene
+Design: /bioinfo/users/nservant/GitLab/nf-CRISPR/assets/libraries/0096_grnas_ngs_reads_sabatini_positive_screen_mouse_NoUnmapped_NoMultihits_NonRedundant.csv
 
-The syntax for this reference configuration is as follows:
+Library Name: sabatiniNegativeHuman10
+Description: Librairie Genome-Wide Knockout standard Sabatini Human with 10 guides/gene
+Design: /bioinfo/users/nservant/GitLab/nf-CRISPR/assets/libraries/0095_grnas_ngs_reads_sabatini_negative_screen_human_NoUnmapped_NoMultihits_NonRedundant.csv
 
+Library Name: weissmanHuman5
+Description: Librairie Genome-Wide Inhibition Standard Weissman Human with 5 guides/gene
+Design: /bioinfo/users/nservant/GitLab/nf-CRISPR/assets/libraries/190730_Library_CRISPRi_Weissman_Top5.csv
+
+Library Name: weissmanHuman10
+Description: Librairie Genome-Wide Inhibition Weissman Human with 10 guides/gene
+Design: /bioinfo/users/nservant/GitLab/nf-CRISPR/assets/libraries/hcrispri-v2-guides-weissman.csv
+
+Library Name: humanGeCKOv2
+Description: Librairie Genome-Wide Knockout standard Gecko Human with 5 guides/gene
+Design: /bioinfo/users/nservant/GitLab/nf-CRISPR/assets/libraries/Human_GeCKOv2_Library_combine_NoUnmapped_NoMultihits_NonRedundant.csv
+
+Library Name: mouseGeCKOv2
+Description: Librairie Genome-Wide Knockout standard Gecko Mouse with 5 guides/gene
+Design: /bioinfo/users/nservant/GitLab/nf-CRISPR/assets/libraries/Mouse_GeCKOv2_Library_combine_NoUnmapped_NoMultihits_NonRedundant.csv
+
+Library Name: customFre
+Description: Librairie Custom Knockout Gecko design Fre team
+Design: /bioinfo/users/nservant/GitLab/nf-CRISPR/assets/libraries/191003-FRE-customlib-Gecko-Sg_custom_library_NoUnmapped_NoMultihits_NonRedundant.csv
+
+```
+
+Note that it is easy to add a new library by simply editing the `conf/genomes.conf` file and adding a new references as follow:
 
 ```nextflow
 params {
-  genomes {
-    'hg19' {
-      fasta    = '<path to the genome fasta file>'
-	  bowtiee2 = '<path to the bowtie index files>'
-      blatdb   = '<path to the BLAT database>'
+  libraries {
+    'MY_LIB' {
+      description = '<SHORT DESCRIPTION OF THE DESIGN>'
+      design = '<PATH TO CSV FILE>'
     }
-    // Any number of additional genomes, key is used with --genome
   }
 }
 ```
 
-Note that these paths can be updated on command line using the following parameters:
-- `--fasta` - Path to genome fasta file
-- `--bowtie2` - Path to bowtie2 indexes
-- `--blatdb` - Path to BLAT database
+### `--librarList`
 
-### `HPV references`
+Running the pipeline with this option will simply list the available libraries and keywords.
 
-The pipeline requires the HPV genome references defined by default in the [genomes config file](../conf/igenomes.config).
-Note that the pipeline comes with a list of HPV strains available in the `../assets/HPVs.fa` file.
+### `--libraryDesign`
 
-By default, the bowtie2 indexes are build on-the-fly by the pipeline from the `--fasta_hpv` file.
-But as previously, these paths can be updated on command line using the following paramteres:
-- `--fasta_hpv` - Path to fasta file with all HPV strains 
-- `--bwt2_index_hpv` - Path to bowtie2 index with all HPV strains
-- `--bwt2_index_hpv_split` - Path to bowtie2 folder with one index per HPV strain
-
+If a library is not available in the pipeline and you do not want to modify the `conf/genomes.conf` file, you can simply provide a `csv` file  with the `--libraryDesign` options.
+The design file is expected to be a comma separated file with 3 columns: guide_id, sequence, gene_id.
 
 ## Other command line parameters
-
-### `--nb_geno`
-
-Number of HPV genotypes to consider for local mapping. Default: 3.
-
-### `--split_report`
-
-Use this option to generate a `MultiQC` report per sample. Otherwise, a single `MultiQC` report for all samples is generated.
 
 ### `--skip*`
 
 The pipeline is made with a few *skip* options that allow to skip optional steps in the workflow.
 The following options can be used:
-- `--skip_trimming` - Skip the reads trimming part
 - `--skip_fastqc` - Skip FastQC
-- `--skip_blat` - Skip the BLAT alignment step
 - `--skip_multiqc` - Skip MultiQC
 				
 ### `--metadata`
