@@ -12,6 +12,7 @@
     * [`--library`](#--library)
     * [`--libraryList`](#--libraryList)
     * [`--libraryDesign`](#--libraryDesign)
+* [Counts](#counts)
     * [`--reverse`](#--reverse)
 * [Job resources](#job-resources)
 * [Automatic resubmission](#automatic-resubmission)
@@ -161,7 +162,7 @@ params {
 }
 ```
 
-### `--librarList`
+### `--libraryList`
 
 Running the pipeline with this option will simply list the available libraries and keywords.
 
@@ -169,6 +170,15 @@ Running the pipeline with this option will simply list the available libraries a
 
 If a library is not available in the pipeline and you do not want to modify the `conf/genomes.conf` file, you can simply provide a `csv` file  with the `--libraryDesign` options.
 The design file is expected to be a comma separated file with 3 columns: guide_id, sequence, gene_id.
+
+## Counts
+
+The main goal of this pipeline is to generate a count table with the number of guides detected for each sample.
+So far, the guide sequence is read in forward of the reads, and only perfect match are reported.
+
+### `--reverse`
+
+Look for the guide sequence in revese complement of the sequencing reads.
 
 ## Other command line parameters
 
