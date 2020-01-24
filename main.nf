@@ -47,9 +47,6 @@ def helpMessage() {
       -profile                      Configuration profile to use. Can use multiple (comma separated)
                                     Configuration profile to use. test / conda / toolsPath / singularity / cluster (see below)
 
-    Genome References:              If not specified in the configuration file or you wish to overwrite any of the references
-      --fasta                       Path to Fasta reference (.fasta)
-
     Other options:
       --libraryList                 List the support CRISPR library designs
       --libraryDesign               Library design file (if not supported in --libraryList)
@@ -107,10 +104,10 @@ if (params.libraryList){
 
 // Configure reference genomes
 // Reference index path configuration
-if (params.genomes && params.genome && !params.genomes.containsKey(params.genome)) {
-   exit 1, "The provided genome '${params.genome}' is not available in the genomes file. Currently the available genomes are ${params.genomes.keySet().join(", ")}"
-}
-params.fasta = params.genome ? params.genomes[ params.genome ].fasta ?: false : false
+//if (params.genomes && params.genome && !params.genomes.containsKey(params.genome)) {
+//   exit 1, "The provided genome '${params.genome}' is not available in the genomes file. Currently the available genomes are ${params.genomes.keySet().join(", ")}"
+//}
+//params.fasta = params.genome ? params.genomes[ params.genome ].fasta ?: false : false
 
 // Has the run name been specified by the user?
 //  this has the bonus effect of catching both -name and --name
@@ -238,7 +235,7 @@ if (params.libraryDesign){
 }else{
    summary['Library Design']  = designPath
 }
-summary['Fasta Ref']    = params.fasta
+//summary['Fasta Ref']    = params.fasta
 summary['Count Strand'] = params.reverse ? "reverse" : "forward"
 summary['Max Memory']   = params.max_memory
 summary['Max CPUs']     = params.max_cpus

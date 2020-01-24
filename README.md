@@ -31,8 +31,8 @@ nf-CRISPR v1.0dev
 
 Usage:
 
-nextflow run main.nf --reads '*_R{1,2}.fastq.gz' --genome 'hg38'
-nextflow run main.nf --samplePlan sample_plan --genome 'hg38'
+nextflow run main.nf --reads '*_R{1,2}.fastq.gz'
+nextflow run main.nf --samplePlan sample_plan
 
 Mandatory arguments:
   --reads                       Path to input data (must be surrounded with quotes)
@@ -40,10 +40,6 @@ Mandatory arguments:
   --library                     Library type. See --libraryList for more information
   -profile                      Configuration profile to use. Can use multiple (comma separated)
                                 Configuration profile to use. test / conda / toolsPath / singularity / cluster (see below)
-
-Genome References:              If not specified in the configuration file or you wish to overwrite any of the references
-  --fasta                       Path to Fasta reference (.fasta)
-
 Other options:
   --libraryList                 List the support CRISPR library designs
   --libraryDesign               Library design file (if not supported in --libraryList)
@@ -80,14 +76,14 @@ nextflow run main.nf -profile test
 #### Run the pipeline from a sample plan
 
 ```
-nextflow run main.nf --samplePlan MY_SAMPLE_PLAN --genome 'hg19' --outdir MY_OUTPUT_DIR
+nextflow run main.nf --samplePlan MY_SAMPLE_PLAN --library 'sabatiniNegativeHuman10' --outdir MY_OUTPUT_DIR
 
 ```
 
 #### Run the pipeline on a cluster
 
 ```
-echo "nextflow run main.nf --reads '*.R{1,2}.fastq.gz' --genome 'hg19' --outdir MY_OUTPUT_DIR -profile singularity,cluster" | qsub -N crispr
+echo "nextflow run main.nf --reads '*.R{1,2}.fastq.gz' --library 'sabatiniNegativeHuman10' --outdir MY_OUTPUT_DIR -profile singularity,cluster" | qsub -N crispr
 
 ```
 
@@ -102,8 +98,7 @@ echo "nextflow run main.nf --reads '*.R{1,2}.fastq.gz' --genome 'hg19' --outdir 
 
 #### Credits
 
-This pipeline has been set up and written by the sequencing facility, the genetic service and the bioinformatics platform of the Institut Curie (M. Deloger, S. Lameiras, S. Baulande, N. Servant)
-
+This pipeline has been set up and written by the sequencing facility, the genetic service and the bioinformatics platform of the Institut Curie (M. Deloger, N. Servant)
 #### Contacts
 
 For any question, bug or suggestion, please, contact the bioinformatics core facility
