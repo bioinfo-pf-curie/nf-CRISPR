@@ -4,18 +4,11 @@ channels:
   - bioconda
   - defaults
 dependencies:
-  # Add manually https://github.com/timflutre/rutilsfastqc
   - fastqc=0.11.8
-  - python=2.7.15
-  - monotonic=1.5
+  - python=3.8.1
+  - numpy
+  - regex
+  - biopython=1.76
   - multiqc=1.8
   - r-base=3.6.2
-  - r-devtools=2.2.1
-  - r-dplyr=0.8.3
-  - r-dt=0.11
-  - r-ggplot2=3.2.1
-  - r-magrittr=1.5
-  - r-plotly=4.9.1
-  - r-purrr=0.3.3
-  - r-reshape=0.8.8
-  - r-tidyr=1.0.0
+  - r-markdown=0.9

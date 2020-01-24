@@ -11,7 +11,6 @@
 
 The pipeline is built using [Nextflow](https://www.nextflow.io), a workflow tool to run tasks across multiple computing infrastructures in a very portable manner.
 It comes with conda / singularity containers making installation trivial and results highly reproducible, and can be run on a single laptop as well as on a cluster.
-
 The current workflow is based on the nf-core best practice. See the nf-core project from details on [guidelines](https://nf-co.re/).
 
 ### Pipeline summary
@@ -20,7 +19,7 @@ This pipeline was designed to process Illumina sequencing data from the Curie CR
 Briefly, it allows to calculate quality metrics and generate count tables.
 
 1. Reads quality control ([FastQC](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/))
-2. Count each library guides in FASTQ reads ()
+2. Count each library guides in FASTQ reads
 
 ### Quick help
 
@@ -38,34 +37,31 @@ nextflow run main.nf --samplePlan sample_plan --genome 'hg38'
 Mandatory arguments:
   --reads                       Path to input data (must be surrounded with quotes)
   --samplePlan                  Path to sample plan file if '--reads' is not specified
-  --genome                      Name of Human genome reference
+  --library                     Library type. See --libraryList for more information
   -profile                      Configuration profile to use. Can use multiple (comma separated)
-                                Available: conda, singularityPath, cluster, test and more.
+                                Configuration profile to use. test / conda / toolsPath / singularity / cluster (see below)
 
-Options:
-  --singleEnd                   Specifies that the input is single end reads
-
-Genome References:              If not specified in the configuration file or you wish to overwrite any of the references.
-  --genome                      Name of iGenomes reference
-  --bwt2_index                  Path to Bowtie2 index
+Genome References:              If not specified in the configuration file or you wish to overwrite any of the references
   --fasta                       Path to Fasta reference (.fasta)
-  --blatdb                      Path to BLAT database (.2bit)
-
-HPV References:
-  --fasta_hpv                   Path to Fasta HPV reference (.fasta)
-  --bwt2_index_hpv              Path to Bowtie2 index for all HPV strains
-  --bwt2_index_hpv_split        Path to Bowtie2 index per HPV strain
 
 Other options:
-  --nb_geno                     Number of HPV genotype to consider. Default: 3
-  --split_report                Generate one report per sample
-  --skip_trimming               Skip trimming step
+  --libraryList                 List the support CRISPR library designs
+  --libraryDesign               Library design file (if not supported in --libraryList)
+  --reverse                     Count guides on the reverse strand. Default is forward
   --skip_fastqc                 Skip quality controls on sequencing reads
-  --skip_blat                   Skip Human mapping with Blat
   --skip_multiqc                Skip report
   --outdir                      The output directory where the results will be saved
   --email                       Set this parameter to your e-mail address to get a summary e-mail with details of the run sent to you when the workflow exits
-  -name                         Name for the pipeline run. If not specified, Nextflow will automatically generate a random mnemonic.
+  -name                         Name for the pipeline run. If not specified, Nextflow will automatically generate a random mnemonic
+ 
+=======================================================
+Available Profiles
+
+  -profile test                Set up the test dataset
+  -profile conda               Build a new conda environment before running the pipeline
+  -profile toolsPath           Use the paths defined in configuration for each tool
+  -profile singularity         Use the Singularity images for each process
+  -profile cluster             Run the workflow on the cluster, instead of locally
 ```
 
 ### Quick run
@@ -91,7 +87,7 @@ nextflow run main.nf --samplePlan MY_SAMPLE_PLAN --genome 'hg19' --outdir MY_OUT
 #### Run the pipeline on a cluster
 
 ```
-echo "nextflow run main.nf --reads '*.R{1,2}.fastq.gz' --genome 'hg19' --outdir MY_OUTPUT_DIR -profile singularityPath,cluster" | qsub -N illumina-hpv
+echo "nextflow run main.nf --reads '*.R{1,2}.fastq.gz' --genome 'hg19' --outdir MY_OUTPUT_DIR -profile singularity,cluster" | qsub -N crispr
 
 ```
 

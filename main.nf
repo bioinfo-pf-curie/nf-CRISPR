@@ -265,7 +265,7 @@ log.info "========================================="
  */
 process fastqc {
     tag "$name"
-    conda "/bioinfo/local/build/Centos/envs_conda/nf-CRISPR-1.0dev"
+    //conda "/bioinfo/local/build/Centos/envs_conda/nf-CRISPR-1.0dev"
     publishDir "${params.outdir}/fastqc", mode: 'copy'
    
     when:
@@ -290,7 +290,7 @@ process fastqc {
  */
 process gunzip {
     tag "$name"
-    conda "/bioinfo/local/build/Centos/envs_conda/nf-CRISPR-1.0dev"
+    //conda "/bioinfo/local/build/Centos/envs_conda/nf-CRISPR-1.0dev"
     publishDir "${params.outdir}/gunzip", mode: 'copy'
 
     input:
@@ -313,7 +313,7 @@ process gunzip {
 
 process counts {
   tag "$prefix"
-  conda "/bioinfo/local/build/Centos/envs_conda/nf-CRISPR-1.0dev"
+  //conda "/bioinfo/local/build/Centos/envs_conda/nf-CRISPR-1.0dev"
   publishDir "${params.outdir}/counts", mode: 'copy'
 
   input:
@@ -333,7 +333,7 @@ process counts {
 
 
 process mergeCounts {
-  conda "/bioinfo/local/build/Centos/envs_conda/nf-CRISPR-1.0dev"
+  //conda "/bioinfo/local/build/Centos/envs_conda/nf-CRISPR-1.0dev"
   publishDir "${params.outdir}/counts", mode: 'copy'
 
   input:
@@ -356,7 +356,7 @@ process mergeCounts {
  */
 
 process get_software_versions {
-  conda "/bioinfo/local/build/Centos/envs_conda/nf-CRISPR-1.0dev"
+  //conda "/bioinfo/local/build/Centos/envs_conda/nf-CRISPR-1.0dev"
 
   output:
   file 'software_versions_mqc.yaml' into software_versions_yaml
@@ -395,7 +395,7 @@ ${summary.collect { k,v -> "            <dt>$k</dt><dd><samp>${v ?: '<span style
 }
 
 process multiqc {
-  conda "/bioinfo/local/build/Centos/envs_conda/nf-CRISPR-1.0dev"
+  //conda "/bioinfo/local/build/Centos/envs_conda/nf-CRISPR-1.0dev"
   publishDir "${params.outdir}/MultiQC/", mode: 'copy'
 
   when:
@@ -429,7 +429,7 @@ process multiqc {
  * Sub-routine
  */
 process output_documentation {
-    conda "/bioinfo/local/build/Centos/envs_conda/nf-CRISPR-1.0dev"
+    //conda "/bioinfo/local/build/Centos/envs_conda/nf-CRISPR-1.0dev"
     publishDir "${params.outdir}/pipeline_info", mode: 'copy'
 
     input:

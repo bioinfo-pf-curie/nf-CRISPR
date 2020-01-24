@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python
 from Bio import SeqIO
 import csv
 from collections import OrderedDict, defaultdict
@@ -12,12 +12,12 @@ alt_map = {'ins':'0'}
 complement = {'A': 'T', 'C': 'G', 'G': 'C', 'T': 'A'} 
 
 def reverse_complement(seq):    
-	for k,v in alt_map.iteritems():
+	for k,v in alt_map.items():
 		seq = seq.replace(k,v)
 	bases = list(seq) 
 	bases = reversed([complement.get(base,base) for base in bases])
 	bases = ''.join(bases)
-	for k,v in alt_map.iteritems():
+	for k,v in alt_map.items():
 		bases = bases.replace(v,k)
 	return bases
 
@@ -52,12 +52,12 @@ def count_spacers(input_file, fastq_file, output_prefix, reverse_count):
 				if not (splitted_line[1] in dict_genename):
 					dict_genename[splitted_line[1]] = splitted_line[2]
 	except:
-		print  "could not open", input_file
+		print ("could not open", input_file)
 	# open fastq file
 	try:
 		handle = open(fastq_file, "rU")
 	except:
-		print "could not find fastq file"
+		print ("could not find fastq file")
 		return
 
 	# process reads in fastq file
@@ -66,7 +66,7 @@ def count_spacers(input_file, fastq_file, output_prefix, reverse_count):
 		num_reads += 1
 		read_sequence = str.upper(str(record.seq))
 		# look for the 5' key with a maximum edit distance of 2 bp in the read
-		for i in xrange(len(read_sequence)-19):
+		for i in range(len(read_sequence)-19):
 			guide = read_sequence[i:i+20]
 			guide_revcomp = reverse_complement(guide)
 			primer = read_sequence[i-19:i]
@@ -102,12 +102,12 @@ def count_spacers(input_file, fastq_file, output_prefix, reverse_count):
 	# percentage of guides that matched perfectly
 	percent_mapped = round(perfect_matches / float(perfect_matches + non_perfect_matches) * 100, 1)
 	# percentage of undetected guides with no read counts
-	guides_with_reads = np.count_nonzero(dictionary.values())
+	guides_with_reads = np.count_nonzero(list(dictionary.values()))
 	guides_no_reads = len(dictionary.values()) - guides_with_reads
 	percent_no_reads = round(len(dictionary.values()) - guides_with_reads / float(len(dictionary.values())) * 100, 1)
 	# skew ratio of top 10% to bottom 10% of guide counts
-	top_10 = np.percentile(dictionary.values(), 90)
-	bottom_10 = np.percentile(dictionary.values(), 10)
+	top_10 = np.percentile(list(dictionary.values()), 90)
+	bottom_10 = np.percentile(list(dictionary.values()), 10)
 	if top_10 != 0 and bottom_10 != 0:
 		skew_ratio = top_10 / bottom_10
 	else:
@@ -117,14 +117,13 @@ def count_spacers(input_file, fastq_file, output_prefix, reverse_count):
 	out_stats = output_prefix + ".stats"
 	header = 'sample_name' + ',' + 'num_reads' + ',' + 'num_reads_with_guide' + ',' + \
                  'perc_mapped_reads' + ',' + 'perc_undetected_guides' + ',' + 'skew_ratio' + ',' + 'sgRNA_library_size'
-        with open(out_stats, 'w') as infile:
-                percent_mapped = round(dict_counter / float(num_reads) * 100, 1)
-                percent_zero_guides = round((len(dictionary.values()) - np.count_nonzero(dictionary.values())) / float(len(dictionary.values())) * 100, 1)
-                infile.write(header + '\n')
-                infile.write(str(output_prefix) + ',' + str(num_reads) + ',' + str(dict_counter) + ',' + str(percent_mapped) + ',' + \
-                             str(percent_zero_guides) + ',' + str(skew_ratio) + ',' + str(len(dictionary)) + '\n')
+	with open(out_stats, 'w') as infile:
+		percent_mapped = round(dict_counter / float(num_reads) * 100, 1)
+		percent_zero_guides = round((len(dictionary.values()) - np.count_nonzero(list(dictionary.values()))) / float(len(dictionary.values())) * 100, 1)
+		infile.write(header + '\n')
+		infile.write(str(output_prefix) + ',' + str(num_reads) + ',' + str(dict_counter) + ',' + str(percent_mapped) + ',' + \
+				     str(percent_zero_guides) + ',' + str(skew_ratio) + ',' + str(len(dictionary)) + '\n')
 		infile.close()
-
 	handle.close()
 	return
 
@@ -139,7 +138,6 @@ if __name__ == '__main__':
 	parser.add_argument('-i', '--input', type=str, dest='input_file',
 						help='input file name (Mandatory)', required=True)
 	parser.add_argument('-r', '--reverse', action="store_true")
-
 	args = parser.parse_args()
 
 	count_spacers(args.input_file, args.fastq_file, args.output_prefix, args.reverse)
