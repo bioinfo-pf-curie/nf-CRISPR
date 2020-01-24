@@ -7,10 +7,7 @@ The pipeline is built using [Nextflow](https://www.nextflow.io/)
 and processes data using the following steps:
 
 * [Quality Controls](#trimgalore) - reads trimming and quality control
-* [HPV genotyping](#hpv-genotyping) - reads alignment on all HPV strains
-* [HPV local mapping](#hpv-local-mapping) - Local alignment on detected HPV strain(s)
-* [Breakpoints detection](#breakpoints-detection) - Detection of soft-clipped ends on the HPV alignment file
-* [Human mapping](#human-mapping) - Alignment of the soft-clipped reads to the Human reference genome
+* [Counts](#counts) - table counts
 * [MultiQC](#multiqc) - aggregate report, describing results of the whole pipeline
 
 
@@ -31,68 +28,10 @@ For further reading and documentation see the [FastQC help](http://www.bioinform
 * `zips/sample_fastqc.zip`
   * zip file containing the FastQC report, tab-delimited data file and plot images
 
-## Control genes mapping
+## Counts
 
-[Bowtie2](http://bowtie-bio.sourceforge.net/bowtie2/index.shtml) is used to map globally all the trimmed reads against 3 control genes (KLK3, GAPDH, RAB7A) in order to estimate virus load/burden.
-
-For further reading and documentation see the [Bowtie2 manual](http://bowtie-bio.sourceforge.net/bowtie2/manual.shtml).
-
-**Output directory: `results/ctrl_mapping`**
-
-* `sample_ctrl.bam`
-  * Mapping result of your trimmed fastq files against the 3 control genes
-* `sample_ctrl.stats`
-  * Statistics about the number of reads mapped per control gene
-
-## HPV genotyping
-
-[Bowtie2](http://bowtie-bio.sourceforge.net/bowtie2/index.shtml) is also used to map globally all the trimmed reads against all the HPVs genomes.
-
-**Output directory: `results/hpv_mapping/global`**
-
-* `sample_hpvs.bam`
-  * Mapping result of your trimmed fastq files against all HPVs genomes
-* `sample_HPVgenotyping.filtered`
-  * List of at most 3 major hpv strains detected
-* `sample_HPVgenotyping.stats`
-  * Statistics about the number of reads mapped per HPV genome
-
-## HPV local mapping
-
-[Bowtie2](http://bowtie-bio.sourceforge.net/bowtie2/index.shtml) is finally used to map locally all the trimmed reads against the, at most 3, major HPVs strains previously detected genomes.
-
-**Output directory: `results/hpv_mapping/local`**
-
-* `sample-genotype.bam`
-  * Mapping result of your trimmed fastq files against the corresponding genotype genome
-* `sample-genotype_coverage.stats`
-  * Table containing coverage statistic and composed of 5 columns : ID,sample,HPVsubtype,minCov,maxCov and meanCov
-* `sample-genotype_covmatrix.mqc`
-  * Coverage matrix (50bp bins)
-
-## Breakpoints detection
-
-**Output directory: `results/hpv_mapping/softclipped`**
-
-* `sample-genotype_3prime_bkp.mqc`
-  * This file contains for each position of the virus the corresponding number of reads having a 3' breakpoint at this position
-* `sample-genotype_5prime_bkp.mqc`
-  * This file contains for each position of the virus the corresponding number of reads having a 5' breakpoint at this position
-* `sample-genotype.fa`
-  * FASTA file containing all the human sequences of the hybrid reads with a detected breakpoint
-
-## Human mapping
-
-[Blat](https://genome.ucsc.edu/cgi-bin/hgBlat) is used to align all the human sequences of the hybrid reads with a detected breakpoint, on the human genome.
-
-For further reading and documentation see the [Blat User Guide](https://genome.ucsc.edu/goldenPath/help/blatSpec.html).
-
-**Output directory: `results/hpv_mapping/blat`**
-
-* `sample-genotype.tsv`
-  * Result of blat alignment
-* `sample-genotype_table_to_display.csv`
-  * Summary table that will be display in the MultiQC HTML report and containing breakpoint coordinates in both virus and human genome
+The table counts of all guides for all samples is available in the file `tablecounts_raw.csv`.
+Note that only reads with a perfect guide sequences are counted.
 
 ## MultiQC
 
