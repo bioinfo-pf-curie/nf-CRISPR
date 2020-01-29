@@ -7,7 +7,7 @@
 
 params {
   // Set path to images
-  containerPath = "/bioinfo/local/curie/ngs-data-analysis/centos/tools/containers/singularity/crispr-1.0/images"
+  containerPath = "@ap_singularity_image_path@"
 
   // Options: Tool versions
   crispr_version = '1.0'
@@ -31,3 +31,4 @@ process {
     container = "${params.containerPath}/r-markdown-${params.rmarkdown_version}.simg"
   }
 }
+

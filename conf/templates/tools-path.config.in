@@ -13,9 +13,9 @@ singularity {
 }
 
 params {
-   toolsPath = "/bioinfo/local/curie/ngs-data-analysis/centos/tools/conda/envs/crispr-1.0/bin"
+   toolsPath = "@ap_tools_path@"
 }
 
 process {
-  beforeScript = "export PATH=${params.toolsPath}/bin:$PATH"
+  beforeScript = "export PATH=${params.toolsPath}:$PATH"
 }

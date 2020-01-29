@@ -1,4 +1,4 @@
-name: nf-CRISPR-1.0dev
+name: crispr-1.0
 channels:
   - conda-forge
   - bioconda
