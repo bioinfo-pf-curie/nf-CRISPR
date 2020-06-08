@@ -4,11 +4,11 @@ channels:
   - bioconda
   - defaults
 dependencies:
-  - fastqc=0.11.8
-  - python=3.8.1
-  - numpy=1.17.5
-  - regex
-  - biopython=1.76
-  - multiqc=1.8
-  - r-base=3.6.2
-  - r-markdown=0.9
+  - bioconda::fastqc=0.11.8=1
+  - conda-forge::python=3.7.6=cpython_h8356626_6
+  - conda-forge::numpy=1.18.1=py37h8960a57_1
+  - conda-forge::regex
+  - conda-forge::biopython=1.76=py37h516909a_0
+  - bioconda::multiqc=1.8=py_2
+  - conda-forge::r-base=4.0.0=hdca8982_3
+  - conda-forge::r-rmarkdown=2.1=r40h6115d3f_1
