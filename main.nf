@@ -264,7 +264,9 @@ process fastqc {
     tag "$name"
     //conda "/bioinfo/local/build/Centos/envs_conda/nf-CRISPR-1.0dev"
     publishDir "${params.outdir}/fastqc", mode: 'copy'
-   
+    
+    label 'fastqc' 
+    
     when:
     !params.skip_fastqc
 
@@ -290,6 +292,8 @@ process gunzip {
     //conda "/bioinfo/local/build/Centos/envs_conda/nf-CRISPR-1.0dev"
     publishDir "${params.outdir}/gunzip", mode: 'copy'
 
+    label 'onlyLinux'
+
     input:
     set val(name), file(reads) from reads_gunzip
 
@@ -312,7 +316,7 @@ process counts {
   tag "$prefix"
   //conda "/bioinfo/local/build/Centos/envs_conda/nf-CRISPR-1.0dev"
   publishDir "${params.outdir}/counts", mode: 'copy'
-
+  label 'python'
   input:
   set val(prefix), file(reads) from reads_gunzipped
   file(library) from library_csv.collect()
@@ -332,7 +336,7 @@ process counts {
 process mergeCounts {
   //conda "/bioinfo/local/build/Centos/envs_conda/nf-CRISPR-1.0dev"
   publishDir "${params.outdir}/counts", mode: 'copy'
-
+  label 'rbase'
   input:
   file input_counts from counts_to_merge.collect()
 
@@ -354,6 +358,8 @@ process mergeCounts {
 
 process get_software_versions {
   //conda "/bioinfo/local/build/Centos/envs_conda/nf-CRISPR-1.0dev"
+  
+  label 'python'
 
   output:
   file 'software_versions_mqc.yaml' into software_versions_yaml
@@ -370,6 +376,9 @@ process get_software_versions {
 }
 
 process workflow_summary_mqc {
+  
+  label 'onlyLinux'
+
   when:
   !params.skip_multiqc
 
@@ -394,7 +403,8 @@ ${summary.collect { k,v -> "            <dt>$k</dt><dd><samp>${v ?: '<span style
 process multiqc {
   //conda "/bioinfo/local/build/Centos/envs_conda/nf-CRISPR-1.0dev"
   publishDir "${params.outdir}/MultiQC/", mode: 'copy'
-
+  
+  label 'multiqc'
   when:
   !params.skip_multiqc
 
@@ -428,6 +438,8 @@ process multiqc {
 process output_documentation {
     //conda "/bioinfo/local/build/Centos/envs_conda/nf-CRISPR-1.0dev"
     publishDir "${params.outdir}/pipeline_info", mode: 'copy'
+
+    label 'rmarkdown'
 
     input:
     file output_docs from ch_output_docs
