@@ -427,7 +427,7 @@ process multiqc {
   metadata_opts = params.metadata ? "--metadata ${metadata}" : ""
   splan_opts = params.samplePlan ? "--splan ${params.samplePlan}" : ""
   """	
-  mqc_header.py --name "CRISPR" --version ${workflow.manifest.version} ${metadata_opts} ${splan_opts} > multiqc-config-header.yaml
+  mqc_header.py --name "CRISPR" --version "${workflow.manifest.version}" ${metadata_opts} ${splan_opts} > multiqc-config-header.yaml
   multiqc . -f $rtitle $rfilename -m fastqc -m custom_content -c multiqc-config-header.yaml -c $multiqc_config
   """
 }
