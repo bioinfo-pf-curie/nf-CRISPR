@@ -283,6 +283,57 @@ process fastqc {
     """
 }
 
+/*
+ * get FastQC Ver
+ */
+process get_fastqc_ver {
+    tag "$name"
+    //conda "/bioinfo/local/build/Centos/envs_conda/nf-CRISPR-1.0dev"
+    publishDir "${params.outdir}/fastqc_version", mode: 'copy'
+
+    label 'fastqc'
+
+    when:
+    !params.skip_fastqc
+
+    
+    output:
+    file("v_fastqc.txt") into fastqc_version_results
+
+    script:
+    
+    """
+    fastqc --version > v_fastqc.txt
+    """ 
+}                  
+
+/*
+ * get multiQC Ver
+ */
+process get_multiqc_ver {
+    tag "$name"
+    //conda "/bioinfo/local/build/Centos/envs_conda/nf-CRISPR-1.0dev"
+    publishDir "${params.outdir}/MultiQC_version/", mode: 'copy'
+
+    label 'multiqc'
+
+    when:
+    !params.skip_multiqc
+
+
+    output:
+    file("v_multiqc.txt") into multiqc_version_results
+
+    script:
+
+    """
+    multiqc --version > v_multiqc.txt
+    """
+}
+
+
+
+
 
 /*
  * Gunzip
@@ -316,7 +367,7 @@ process counts {
   tag "$prefix"
   //conda "/bioinfo/local/build/Centos/envs_conda/nf-CRISPR-1.0dev"
   publishDir "${params.outdir}/counts", mode: 'copy'
-  label 'python'
+  label 'biopython'
   input:
   set val(prefix), file(reads) from reads_gunzipped
   file(library) from library_csv.collect()
@@ -356,10 +407,15 @@ process mergeCounts {
 /* MultiQC
  */
 
+
 process get_software_versions {
   //conda "/bioinfo/local/build/Centos/envs_conda/nf-CRISPR-1.0dev"
   
   label 'python'
+
+  input:
+  file 'v_fastqc.txt'   from fastqc_version_results
+  file 'v_multiqc.txt'  from multiqc_version_results 
 
   output:
   file 'software_versions_mqc.yaml' into software_versions_yaml
@@ -368,9 +424,7 @@ process get_software_versions {
   """
   echo $workflow.manifest.version > v_pipeline.txt
   echo $workflow.nextflow.version > v_nextflow.txt
-  fastqc --version > v_fastqc.txt
   python --version 2> v_python.txt
-  multiqc --version > v_multiqc.txt
   scrape_software_versions.py > software_versions_mqc.yaml
   """
 }
