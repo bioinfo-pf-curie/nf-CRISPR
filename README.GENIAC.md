@@ -5,11 +5,11 @@
 sudo yum install cmake3
 
 ### clone repo 
-mkdir nf-CRISPR-GENIAC
-cd nf-CRISPR-GENIAC
+mkdir nf-CRISPR-GENIAC  
+cd nf-CRISPR-GENIAC  
 
-git clone https://gitlab.curie.fr/data-analysis/nf-CRISPR
-git checkout geniac
+git clone https://gitlab.curie.fr/data-analysis/nf-CRISPR  
+git checkout geniac  
 
 cd ..  
 mkdir build  
