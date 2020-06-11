@@ -20,8 +20,8 @@ mkdir deploy
 
 ### singularity
 export PATH=/bioinfo/local/build/singularity/singularity-3.5.2/bin:$PATH  
-export LC_ALL=en_US.utf-8
-export LANGAGE=en_US.utf-8
+export LC_ALL=en_US.utf-8  
+export LANGAGE=en_US.utf-8  
 
 ### copy des images singularity
 mkdir singularity
