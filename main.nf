@@ -286,7 +286,7 @@ process fastqc {
 /*
  * get FastQC Ver
  */
-process get_fastqc_ver {
+process getFastqcVer {
     tag "$name"
     //conda "/bioinfo/local/build/Centos/envs_conda/nf-CRISPR-1.0dev"
     publishDir "${params.outdir}/fastqc_version", mode: 'copy'
@@ -298,7 +298,7 @@ process get_fastqc_ver {
 
     
     output:
-    file("v_fastqc.txt") into fastqc_version_results
+    file("v_fastqc.txt") into fastqcVersionCh
 
     script:
     
@@ -310,7 +310,7 @@ process get_fastqc_ver {
 /*
  * get multiQC Ver
  */
-process get_multiqc_ver {
+process getMultiqcVer {
     tag "$name"
     //conda "/bioinfo/local/build/Centos/envs_conda/nf-CRISPR-1.0dev"
     publishDir "${params.outdir}/MultiQC_version/", mode: 'copy'
@@ -322,7 +322,7 @@ process get_multiqc_ver {
 
 
     output:
-    file("v_multiqc.txt") into multiqc_version_results
+    file("v_multiqc.txt") into multiqcVersionCh
 
     script:
 
@@ -343,7 +343,7 @@ process gunzip {
     //conda "/bioinfo/local/build/Centos/envs_conda/nf-CRISPR-1.0dev"
     publishDir "${params.outdir}/gunzip", mode: 'copy'
 
-    label 'onlyLinux'
+    label 'onlylinux'
 
     input:
     set val(name), file(reads) from reads_gunzip
@@ -414,8 +414,8 @@ process get_software_versions {
   label 'python'
 
   input:
-  file 'v_fastqc.txt'   from fastqc_version_results
-  file 'v_multiqc.txt'  from multiqc_version_results 
+  file 'v_fastqc.txt'   from fastqcVersionCh
+  file 'v_multiqc.txt'  from multiqcVersionCh 
 
   output:
   file 'software_versions_mqc.yaml' into software_versions_yaml
