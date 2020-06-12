@@ -8,7 +8,7 @@ sudo yum install cmake3
 mkdir nf-CRISPR-GENIAC  
 cd nf-CRISPR-GENIAC  
 
-git clone https://gitlab.curie.fr/data-analysis/nf-CRISPR  
+git clone --recursive https://gitlab.curie.fr/data-analysis/nf-CRISPR  
 git checkout geniac  
 
 cd ..  
@@ -31,7 +31,7 @@ cp /data/tmp/fjarlier/nf-CRISPR-Singularity/*.simg singularity/
 
 cd build  
 
-cmake3 /data/tmp/fjarlier/nf-CRISPR/geniac -DCMAKE_INSTALL_PREFIX="${PATH_TO_DEPLOY}" -Dap_annotation_path="" -Dap_install_docker_images="OFF" -Dap_install_docker_recipes="ON" -Dap_install_singularity_images="OFF" -Dap_install_singularity_recipes="ON" -Dap_nf_executor="pbs" -Dap_singularity_image_path="${PATH_TO_SINGULARITY_IMAGES}" -Dap_use_singularity_image_link="ON"  
+cmake3 ${nf-CRISPR}/geniac -DCMAKE_INSTALL_PREFIX="${PATH_TO_DEPLOY}" -Dap_annotation_path="" -Dap_install_docker_images="OFF" -Dap_install_docker_recipes="ON" -Dap_install_singularity_images="OFF" -Dap_install_singularity_recipes="ON" -Dap_nf_executor="pbs" -Dap_singularity_image_path="${PATH_TO_SINGULARITY_IMAGES}" -Dap_use_singularity_image_link="ON"  
 
 make install  
 
@@ -53,7 +53,7 @@ export PATH=/data/users/${usr_name}/miniconda3/bin:$PATH
 
 cd build    
 
-cmake3 /data/tmp/fjarlier/nf-CRISPR/geniac -DCMAKE_INSTALL_PREFIX="${PATH_TO_DEPLOY}" -Dap_annotation_path="" -Dap_install_docker_images="OFF" -Dap_install_docker_recipes="ON" -Dap_install_singularity_images="OFF" -Dap_install_singularity_recipes="ON" -Dap_nf_executor="pbs" -Dap_singularity_image_path="" -Dap_use_singularity_image_link="OFF"  
+cmake3 ${nf-CRISPR}/geniac -DCMAKE_INSTALL_PREFIX="${PATH_TO_DEPLOY}" -Dap_annotation_path="" -Dap_install_docker_images="OFF" -Dap_install_docker_recipes="ON" -Dap_install_singularity_images="OFF" -Dap_install_singularity_recipes="ON" -Dap_nf_executor="pbs" -Dap_singularity_image_path="" -Dap_use_singularity_image_link="OFF"  
 
 make install  
 
