@@ -19,9 +19,10 @@ mkdir build
 mkdir deploy  
 mkdir singularity
 
-PATH_TO_DEPLOY=${CRISPR}/deploy
-PATH_TO_BUILD=${CRISPR}/build
-PATH_TO_SINGULARITY=${CRISPR}/singularity
+PATH_TO_DEPLOY=${CRISPR}/deploy  
+PATH_TO_BUILD=${CRISPR}/build  
+PATH_TO_SINGULARITY=${CRISPR}/singularity  
+
 
 #   TEST PROFIL SINGULARITY
  
