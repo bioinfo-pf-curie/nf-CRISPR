@@ -38,7 +38,7 @@ cp /data/tmp/fjarlier/nf-CRISPR-Singularity/*.simg ${PATH_TO_SINGULARITY}
 
 ### build 
 
-cd build  
+cd ${PATH_TO_BUILD}  
 
 cmake3 ${CRISPR}/geniac -DCMAKE_INSTALL_PREFIX="${PATH_TO_DEPLOY}" -Dap_annotation_path="" -Dap_install_docker_images="OFF" -Dap_install_docker_recipes="ON" -Dap_install_singularity_images="OFF" -Dap_install_singularity_recipes="ON" -Dap_nf_executor="pbs" -Dap_singularity_image_path="${PATH_TO_SINGULARITY}" -Dap_use_singularity_image_link="ON"  
 
@@ -60,7 +60,7 @@ export PATH=/data/users/${usr_name}/miniconda3/bin:$PATH
 
 ### build environment
 
-cd build    
+cd ${PATH_TO_BUILD}
 
 cmake3 ${CRISPR}/geniac -DCMAKE_INSTALL_PREFIX="${PATH_TO_DEPLOY}" -Dap_annotation_path="" -Dap_install_docker_images="OFF" -Dap_install_docker_recipes="ON" -Dap_install_singularity_images="OFF" -Dap_install_singularity_recipes="ON" -Dap_nf_executor="pbs" -Dap_singularity_image_path="" -Dap_use_singularity_image_link="OFF"  
 
