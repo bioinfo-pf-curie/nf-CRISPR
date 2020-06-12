@@ -45,7 +45,7 @@ cmake3 ${CRISPR}/geniac -DCMAKE_INSTALL_PREFIX="${PATH_TO_DEPLOY}" -Dap_annotati
 make install  
 
 ### test
-cd ../deploy/pipeline  
+cd ${PATH_TO_DEPLOY}/pipeline  
 
 nextflow run main.nf --singleEnd 'true' --genome 'hg38' --library 'GW-KO-Sabatini-Human-10' --samplePlan '${PATH_TO_DEPLOY}/pipeline/test/sample_plan.csv' -profile singularity
 
@@ -68,7 +68,7 @@ make install
 
 ### run pipeline
 
-cd ../deploy/pipeline  
+cd ${PATH_TO_DEPLOY}/pipeline  
 
 nextflow run main.nf --singleEnd 'true' --genome 'hg38' --library 'GW-KO-Sabatini-Human-10' --samplePlan '${PATH_TO_DEPLOY}/pipeline/test/sample_plan.csv' -profile multiconda
 
