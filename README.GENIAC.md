@@ -9,6 +9,7 @@ mkdir nf-CRISPR-GENIAC
 cd nf-CRISPR-GENIAC  
 
 git clone --recursive https://gitlab.curie.fr/data-analysis/nf-CRISPR  
+cd nf-CRISPR
 git checkout geniac  
 
 cd ..  
