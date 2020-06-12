@@ -12,9 +12,16 @@ git clone --recursive https://gitlab.curie.fr/data-analysis/nf-CRISPR
 cd nf-CRISPR  
 git checkout geniac  
 
+CRISPR=`pwd`
+
 cd ..  
 mkdir build  
 mkdir deploy  
+mkdir singularity
+
+PATH_TO_DEPLOY=${CRISPR}/deploy
+PATH_TO_BUILD=${CRISPR}/build
+PATH_TO_SINGULARITY=${CRISPR}/singularity
 
 #   TEST PROFIL SINGULARITY
  
@@ -25,21 +32,21 @@ export LC_ALL=en_US.utf-8
 export LANGAGE=en_US.utf-8  
 
 ### copy des images singularity  
-mkdir singularity  
-cp /data/tmp/fjarlier/nf-CRISPR-Singularity/*.simg singularity/  
+
+cp /data/tmp/fjarlier/nf-CRISPR-Singularity/*.simg ${PATH_TO_SINGULARITY}  
 
 ### build 
 
 cd build  
 
-cmake3 ${nf-CRISPR}/geniac -DCMAKE_INSTALL_PREFIX="${PATH_TO_DEPLOY}" -Dap_annotation_path="" -Dap_install_docker_images="OFF" -Dap_install_docker_recipes="ON" -Dap_install_singularity_images="OFF" -Dap_install_singularity_recipes="ON" -Dap_nf_executor="pbs" -Dap_singularity_image_path="${PATH_TO_SINGULARITY_IMAGES}" -Dap_use_singularity_image_link="ON"  
+cmake3 ${CRISPR}/geniac -DCMAKE_INSTALL_PREFIX="${PATH_TO_DEPLOY}" -Dap_annotation_path="" -Dap_install_docker_images="OFF" -Dap_install_docker_recipes="ON" -Dap_install_singularity_images="OFF" -Dap_install_singularity_recipes="ON" -Dap_nf_executor="pbs" -Dap_singularity_image_path="${PATH_TO_SINGULARITY}" -Dap_use_singularity_image_link="ON"  
 
 make install  
 
 ### test
 cd ../deploy/pipeline  
 
-nextflow run main.nf --singleEnd 'true' --genome 'hg38' --library 'GW-KO-Sabatini-Human-10' --samplePlan '${DEPLOY_PATH}/pipeline/test/sample_plan.csv' -profile singularity
+nextflow run main.nf --singleEnd 'true' --genome 'hg38' --library 'GW-KO-Sabatini-Human-10' --samplePlan '${PATH_TO_DEPLOY}/pipeline/test/sample_plan.csv' -profile singularity
 
 
 #   TEST PROFIL MULTICONDA
@@ -54,7 +61,7 @@ export PATH=/data/users/${usr_name}/miniconda3/bin:$PATH
 
 cd build    
 
-cmake3 ${nf-CRISPR}/geniac -DCMAKE_INSTALL_PREFIX="${PATH_TO_DEPLOY}" -Dap_annotation_path="" -Dap_install_docker_images="OFF" -Dap_install_docker_recipes="ON" -Dap_install_singularity_images="OFF" -Dap_install_singularity_recipes="ON" -Dap_nf_executor="pbs" -Dap_singularity_image_path="" -Dap_use_singularity_image_link="OFF"  
+cmake3 ${CRISPR}/geniac -DCMAKE_INSTALL_PREFIX="${PATH_TO_DEPLOY}" -Dap_annotation_path="" -Dap_install_docker_images="OFF" -Dap_install_docker_recipes="ON" -Dap_install_singularity_images="OFF" -Dap_install_singularity_recipes="ON" -Dap_nf_executor="pbs" -Dap_singularity_image_path="" -Dap_use_singularity_image_link="OFF"  
 
 make install  
 
@@ -62,7 +69,7 @@ make install
 
 cd ../deploy/pipeline  
 
-nextflow run main.nf --singleEnd 'true' --genome 'hg38' --library 'GW-KO-Sabatini-Human-10' --samplePlan '${DEPLOY_PATH}/pipeline/test/sample_plan.csv' -profile multiconda
+nextflow run main.nf --singleEnd 'true' --genome 'hg38' --library 'GW-KO-Sabatini-Human-10' --samplePlan '${PATH_TO_DEPLOY}/pipeline/test/sample_plan.csv' -profile multiconda
 
 
 
