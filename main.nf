@@ -168,7 +168,7 @@ else if(params.readPaths){
             .from(params.readPaths)
             .map { row -> [ row[0], [file(row[1][0])]] }
             .ifEmpty { exit 1, "params.readPaths was empty - no input files supplied" }
-            .into {chReadsFastqc; chrReadsGunzip}
+            .into {chReadsFastqc; chReadsGunzip}
     } else {
         Channel
             .from(params.readPaths)
@@ -450,10 +450,10 @@ process multiqc {
   !params.skipMultiqc
 
   input:
-  file splan from ch_splan.first()
-  file multiqc_config from ch_multiqc_config
-  file('fastqc/*') from fastqc_results.map{items->items[1]}.collect().ifEmpty([])
-  file('stats/*') from ch_stats.collect()
+  file splan from chSplan.first()
+  file multiqc_config from chMultiqcConfig
+  file('fastqc/*') from fastqcResults.map{items->items[1]}.collect().ifEmpty([])
+  file('stats/*') from chStats.collect()
   file ('software_versions/*') from software_versions_yaml.collect()
   file ('workflow_summary/*') from workflow_summary_yaml.collect()
  
@@ -463,12 +463,12 @@ process multiqc {
   file "*_data"
 
   script:
-  rtitle = custom_runName ? "--title \"$custom_runName\"" : ''
-  rfilename = custom_runName ? "--filename " + custom_runName + "_crispr_report" : "--filename crispr_report"
-  metadata_opts = params.metadata ? "--metadata ${metadata}" : ""
-  splan_opts = params.samplePlan ? "--splan ${params.samplePlan}" : ""
+  rtitle = customRunName ? "--title \"$customRunName\"" : ''
+  rfilename = customRunName ? "--filename " + customRunName + "_crispr_report" : "--filename crispr_report"
+  metadataOpts = params.metadata ? "--metadata ${metadata}" : ""
+  splanOpts = params.samplePlan ? "--splan ${params.samplePlan}" : ""
   """	
-  mqc_header.py --name "CRISPR" --version "${workflow.manifest.version}" ${metadata_opts} ${splan_opts} > multiqc-config-header.yaml
+  mqc_header.py --name "CRISPR" --version "${workflow.manifest.version}" ${metadataOpts} ${splanOpts} > multiqc-config-header.yaml
   multiqc . -f $rtitle $rfilename -m fastqc -m custom_content -c multiqc-config-header.yaml -c $multiqc_config
   """
 }
@@ -482,7 +482,7 @@ process output_documentation {
     publishDir "${params.outdir}/pipeline_info", mode: 'copy'
 
     input:
-    file output_docs from ch_output_docs
+    file output_docs from chOutputDocs
 
     output:
     file "results_description.html"
