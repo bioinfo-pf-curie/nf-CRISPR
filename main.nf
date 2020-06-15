@@ -62,6 +62,7 @@ def helpMessage() {
 
       -profile test                Set up the test dataset
       -profile conda               Build a new conda environment before running the pipeline
+      -profile multiconda          Build a new conda environment for each process before running the pipeline
       -profile toolsPath           Use the paths defined in configuration for each tool
       -profile singularity         Use the Singularity images for each process
       -profile cluster             Run the workflow on the cluster, instead of locally
