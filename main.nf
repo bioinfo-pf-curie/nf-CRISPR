@@ -1,7 +1,7 @@
 #!/usr/bin/env nextflow
 
 /*
-Copyright Institut Curie 2019
+Copyright Institut Curie 2019-2020
 This software is a computer program whose purpose is to analyze high-throughput sequencing data.
 You can use, modify and/ or redistribute the software under the terms of license (see the LICENSE file for more details).
 The software is distributed in the hope that it will be useful, but "AS IS" WITHOUT ANY WARRANTY OF ANY KIND. 
@@ -262,10 +262,9 @@ log.info "========================================="
  */
 process fastqc {
     tag "$name"
-    //conda "/bioinfo/local/build/Centos/envs_conda/nf-CRISPR-1.0dev"
+    label 'fastqc'
+
     publishDir "${params.outdir}/fastqc", mode: 'copy'
-    
-    label 'fastqc' 
     
     when:
     !params.skip_fastqc
@@ -288,10 +287,9 @@ process fastqc {
  */
 process getFastqcVer {
     tag "$name"
-    //conda "/bioinfo/local/build/Centos/envs_conda/nf-CRISPR-1.0dev"
-    publishDir "${params.outdir}/fastqc_version", mode: 'copy'
-
     label 'fastqc'
+
+    publishDir "${params.outdir}/fastqc_version", mode: 'copy'
 
     when:
     !params.skip_fastqc
@@ -312,10 +310,9 @@ process getFastqcVer {
  */
 process getMultiqcVer {
     tag "$name"
-    //conda "/bioinfo/local/build/Centos/envs_conda/nf-CRISPR-1.0dev"
-    publishDir "${params.outdir}/MultiQC_version/", mode: 'copy'
-
     label 'multiqc'
+
+    publishDir "${params.outdir}/MultiQC_version/", mode: 'copy'
 
     when:
     !params.skip_multiqc
@@ -331,19 +328,14 @@ process getMultiqcVer {
     """
 }
 
-
-
-
-
 /*
  * Gunzip
  */
 process gunzip {
     tag "$name"
-    //conda "/bioinfo/local/build/Centos/envs_conda/nf-CRISPR-1.0dev"
-    publishDir "${params.outdir}/gunzip", mode: 'copy'
-
     label 'onlylinux'
+
+    publishDir "${params.outdir}/gunzip", mode: 'copy'
 
     input:
     set val(name), file(reads) from reads_gunzip
@@ -358,16 +350,16 @@ process gunzip {
     """
 }
 
-
 /*
  * Counting
  */
 
 process counts {
   tag "$prefix"
-  //conda "/bioinfo/local/build/Centos/envs_conda/nf-CRISPR-1.0dev"
-  publishDir "${params.outdir}/counts", mode: 'copy'
   label 'biopython'
+
+  publishDir "${params.outdir}/counts", mode: 'copy'
+
   input:
   set val(prefix), file(reads) from reads_gunzipped
   file(library) from library_csv.collect()
@@ -383,11 +375,11 @@ process counts {
   """
 }
 
-
 process mergeCounts {
-  //conda "/bioinfo/local/build/Centos/envs_conda/nf-CRISPR-1.0dev"
-  publishDir "${params.outdir}/counts", mode: 'copy'
   label 'rbase'
+
+  publishDir "${params.outdir}/counts", mode: 'copy'
+
   input:
   file input_counts from counts_to_merge.collect()
 
@@ -402,15 +394,11 @@ process mergeCounts {
 }
 
 
-
 /*
 /* MultiQC
  */
 
-
 process get_software_versions {
-  //conda "/bioinfo/local/build/Centos/envs_conda/nf-CRISPR-1.0dev"
-  
   label 'python'
 
   input:
@@ -429,8 +417,7 @@ process get_software_versions {
   """
 }
 
-process workflow_summary_mqc {
-  
+process workflow_summary_mqc {  
   label 'onlyLinux'
 
   when:
@@ -455,10 +442,10 @@ ${summary.collect { k,v -> "            <dt>$k</dt><dd><samp>${v ?: '<span style
 }
 
 process multiqc {
-  //conda "/bioinfo/local/build/Centos/envs_conda/nf-CRISPR-1.0dev"
+  label 'multiqc' 
+
   publishDir "${params.outdir}/MultiQC/", mode: 'copy'
-  
-  label 'multiqc'
+
   when:
   !params.skip_multiqc
 
@@ -490,10 +477,9 @@ process multiqc {
  * Sub-routine
  */
 process output_documentation {
-    //conda "/bioinfo/local/build/Centos/envs_conda/nf-CRISPR-1.0dev"
-    publishDir "${params.outdir}/pipeline_info", mode: 'copy'
-
     label 'rmarkdown'
+
+    publishDir "${params.outdir}/pipeline_info", mode: 'copy'
 
     input:
     file output_docs from ch_output_docs
