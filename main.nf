@@ -263,6 +263,8 @@ log.info "========================================="
 process fastqc {
     tag "$name"
     label 'fastqc'
+    label 'medCpu'
+    label 'medMem'
 
     publishDir "${params.outdir}/fastqc", mode: 'copy'
     
@@ -288,6 +290,8 @@ process fastqc {
 process getFastqcVer {
     tag "$name"
     label 'fastqc'
+    label 'lowCpu'
+    label 'lowMem'
 
     publishDir "${params.outdir}/fastqc_version", mode: 'copy'
 
@@ -311,6 +315,8 @@ process getFastqcVer {
 process getMultiqcVer {
     tag "$name"
     label 'multiqc'
+    label 'lowCpu'
+    label 'lowMem'
 
     publishDir "${params.outdir}/MultiQC_version/", mode: 'copy'
 
@@ -334,6 +340,8 @@ process getMultiqcVer {
 process gunzip {
     tag "$name"
     label 'onlylinux'
+    label 'lowCpu'
+    label 'lowMem'
 
     publishDir "${params.outdir}/gunzip", mode: 'copy'
 
@@ -357,6 +365,8 @@ process gunzip {
 process counts {
   tag "$prefix"
   label 'biopython'
+  label 'lowCpus'
+  label 'medMem'
 
   publishDir "${params.outdir}/counts", mode: 'copy'
 
@@ -377,6 +387,8 @@ process counts {
 
 process mergeCounts {
   label 'rbase'
+  label 'lowCpu'
+  label 'medMem'
 
   publishDir "${params.outdir}/counts", mode: 'copy'
 
@@ -400,6 +412,8 @@ process mergeCounts {
 
 process get_software_versions {
   label 'python'
+  label 'lowCpu'
+  label 'lowMem'
 
   input:
   file 'v_fastqc.txt'   from fastqcVersionCh
@@ -419,6 +433,8 @@ process get_software_versions {
 
 process workflow_summary_mqc {  
   label 'onlyLinux'
+  label 'lowCpu'
+  label 'lowMem'
 
   when:
   !params.skipMultiqc
@@ -443,6 +459,8 @@ ${summary.collect { k,v -> "            <dt>$k</dt><dd><samp>${v ?: '<span style
 
 process multiqc {
   label 'multiqc' 
+  label 'lowCpu'
+  label 'lowMem'
 
   publishDir "${params.outdir}/MultiQC/", mode: 'copy'
 
@@ -478,6 +496,8 @@ process multiqc {
  */
 process output_documentation {
     label 'rmarkdown'
+    label 'lowCpu'
+    label 'lowMem'
 
     publishDir "${params.outdir}/pipeline_info", mode: 'copy'
 
