@@ -25,8 +25,8 @@ This script is based on the nf-core guidelines. See https://nf-co.re/ for more i
 
 def helpMessage() {
     if ("${workflow.manifest.version}" =~ /dev/ ){
-       dev_mess = file("$baseDir/assets/dev_message.txt")
-       log.info dev_mess.text
+       devMess = file("$baseDir/assets/dev_message.txt")
+       log.info devMess.text
     }
 
     log.info"""
@@ -51,8 +51,8 @@ def helpMessage() {
       --libraryList                 List the support CRISPR library designs
       --libraryDesign               Library design file (if not supported in --libraryList)
       --reverse                     Count guides on the reverse strand. Default is forward
-      --skip_fastqc                 Skip quality controls on sequencing reads
-      --skip_multiqc                Skip report
+      --skipFastqc                  Skip quality controls on sequencing reads
+      --skipMultiqc                 Skip report
       --outdir                      The output directory where the results will be saved
       --email                       Set this parameter to your e-mail address to get a summary e-mail with details of the run sent to you when the workflow exits
       -name                         Name for the pipeline run. If not specified, Nextflow will automatically generate a random mnemonic
@@ -111,14 +111,14 @@ if (params.libraryList){
 
 // Has the run name been specified by the user?
 //  this has the bonus effect of catching both -name and --name
-custom_runName = params.name
+customRunName = params.name
 if( !(workflow.runName ==~ /[a-z]+_[a-z]+/) ){
-  custom_runName = workflow.runName
+  customRunName = workflow.runName
 }
 
 // Stage config files
-ch_multiqc_config = Channel.fromPath(params.multiqc_config)
-ch_output_docs = Channel.fromPath("$baseDir/docs/output.md")
+chMultiqcConfig = Channel.fromPath(params.multiqcConfig)
+chOutputDocs = Channel.fromPath("$baseDir/docs/output.md")
 
 /*
  * CHANNELS
@@ -132,11 +132,11 @@ if (!params.libraryDesign && params.library){
   designPath = params.library ? params.libraries[ params.library ].design ?: false : false
   Channel.fromPath( designPath )
       .ifEmpty { exit 1, "Reference library not found: ${designPath}" }
-      .set { library_csv }
+      .set { chLibraryCsv }
 }else if ( params.libraryDesign ){
   Channel.fromPath( params.libraryDesign )
       .ifEmpty { exit 1, "Reference library not found: ${params.libraryDesign}" }
-      .set { library_csv }
+      .set { chLibraryCsv }
 }else{
   exit 1, "No library detected. See the '--libraryList', '--library' or '--libraryDesign' parameters.}"
 }
@@ -152,13 +152,13 @@ if(params.samplePlan){
          .from(file("${params.samplePlan}"))
          .splitCsv(header: false)
          .map{ row -> [ row[0], [file(row[2])]] }
-         .into {reads_fastqc; reads_gunzip}
+         .into {chReadsFastqc; chReadsGunzip}
    }else{
       Channel
          .from(file("${params.samplePlan}"))
          .splitCsv(header: false)
          .map{ row -> [ row[0], [file(row[2]), file(row[3])]] }
-         .into {reads_fastqc; reads_gunzip}
+         .into {chReadsFastqc; chReadsGunzip}
    }
    params.reads=false
 }
@@ -168,19 +168,19 @@ else if(params.readPaths){
             .from(params.readPaths)
             .map { row -> [ row[0], [file(row[1][0])]] }
             .ifEmpty { exit 1, "params.readPaths was empty - no input files supplied" }
-            .into {reads_fastqc; reads_gunzip}
+            .into {chReadsFastqc; chrReadsGunzip}
     } else {
         Channel
             .from(params.readPaths)
             .map { row -> [ row[0], [file(row[1][0]), file(row[1][1])]] }
             .ifEmpty { exit 1, "params.readPaths was empty - no input files supplied" }
-            .into {reads_fastqc; reads_gunzip}
+            .into {chReadsFastqc; chReadsGunzip}
     }
 } else {
     Channel
         .fromFilePairs( params.reads, size: params.singleEnd ? 1 : 2 )
         .ifEmpty { exit 1, "Cannot find any reads matching: ${params.reads}\nNB: Path needs to be enclosed in quotes!\nNB: Path requires at least one * wildcard!\nIf this is single-end data, please specify --singleEnd on the command line." }
-        .into {reads_fastqc; reads_gunzip}
+        .into {chReadsFastqc; chReadsGunzip}
 }
 
 /*
@@ -188,7 +188,7 @@ else if(params.readPaths){
  */
 
 if (params.samplePlan){
-  ch_splan = Channel.fromPath(params.samplePlan)
+  chSplan = Channel.fromPath(params.samplePlan)
 }else{
   if (params.singleEnd){
     Channel
@@ -196,21 +196,21 @@ if (params.samplePlan){
        .collectFile() {
          item -> ["sample_plan.csv", item[0] + ',' + item[0] + ',' + item[1][0] + '\n']
         }
-       .set{ ch_splan }
+       .set{ chSplan }
   }else{
      Channel
        .from(params.readPaths)
        .collectFile() {
          item -> ["sample_plan.csv", item[0] + ',' + item[0] + ',' + item[1][0] + ',' + item[1][1] + '\n']
         }
-       .set{ ch_splan }
+       .set{ chSplan }
   }
 }
 
 // Header log info
 if ("${workflow.manifest.version}" =~ /dev/ ){
-   dev_mess = file("$baseDir/assets/dev_message.txt")
-   log.info dev_mess.text
+   devMess = file("$baseDir/assets/dev_message.txt")
+   log.info devMess.text
 }
 
 // Header log info
@@ -221,7 +221,7 @@ CRISPR v${workflow.manifest.version}"
 def summary = [:]
 summary['Pipeline Name']  = 'CRISPR'
 summary['Pipeline Version'] = workflow.manifest.version
-summary['Run Name']     = custom_runName ?: workflow.runName
+summary['Run Name']     = customRunName ?: workflow.runName
 if (params.samplePlan) {
    summary['SamplePlan']   = params.samplePlan
 }else{
@@ -267,13 +267,13 @@ process fastqc {
     publishDir "${params.outdir}/fastqc", mode: 'copy'
     
     when:
-    !params.skip_fastqc
+    !params.skipFastqc
 
     input:
-    set val(name), file(reads) from reads_fastqc
+    set val(name), file(reads) from chReadsFastqc
 
     output:
-    set val(prefix), file("${prefix}*.{zip,html}") into fastqc_results
+    set val(prefix), file("${prefix}*.{zip,html}") into fastqcResults
 
     script:
     prefix = reads[0].toString() - ~/(_1)?(_2)?(_R1)?(_R2)?(.R1)?(.R2)?(_val_1)?(_val_2)?(_trimmed)?(\.fq)?(\.fastq)?(\.gz)?$/
@@ -292,7 +292,7 @@ process getFastqcVer {
     publishDir "${params.outdir}/fastqc_version", mode: 'copy'
 
     when:
-    !params.skip_fastqc
+    !params.skipFastqc
 
     
     output:
@@ -315,7 +315,7 @@ process getMultiqcVer {
     publishDir "${params.outdir}/MultiQC_version/", mode: 'copy'
 
     when:
-    !params.skip_multiqc
+    !params.skipMultiqc
 
 
     output:
@@ -338,10 +338,10 @@ process gunzip {
     publishDir "${params.outdir}/gunzip", mode: 'copy'
 
     input:
-    set val(name), file(reads) from reads_gunzip
+    set val(name), file(reads) from chReadsGunzip
 
     output:
-    set val(prefix), file("${prefix}.R1.fastq") into reads_gunzipped
+    set val(prefix), file("${prefix}.R1.fastq") into chReadsGunzipped
 
     script:
     prefix= reads.toString() - ~/(.R1.fastq.gz)?$/
@@ -361,12 +361,12 @@ process counts {
   publishDir "${params.outdir}/counts", mode: 'copy'
 
   input:
-  set val(prefix), file(reads) from reads_gunzipped
-  file(library) from library_csv.collect()
+  set val(prefix), file(reads) from chReadsGunzipped
+  file(library) from chLibraryCsv.collect()
 
   output:
-  file("${prefix}.counts") into counts_to_merge
-  file("${prefix}.stats") into ch_stats
+  file("${prefix}.counts") into countsToMerge
+  file("${prefix}.stats") into chStats
 
   script:
   opts = params.reverse ? "--reverse" : ''
@@ -381,7 +381,7 @@ process mergeCounts {
   publishDir "${params.outdir}/counts", mode: 'copy'
 
   input:
-  file input_counts from counts_to_merge.collect()
+  file input_counts from countsToMerge.collect()
 
   output:
   file "tablecounts_raw.csv"
@@ -421,7 +421,7 @@ process workflow_summary_mqc {
   label 'onlyLinux'
 
   when:
-  !params.skip_multiqc
+  !params.skipMultiqc
 
   output:
   file 'workflow_summary_mqc.yaml' into workflow_summary_yaml
@@ -447,7 +447,7 @@ process multiqc {
   publishDir "${params.outdir}/MultiQC/", mode: 'copy'
 
   when:
-  !params.skip_multiqc
+  !params.skipMultiqc
 
   input:
   file splan from ch_splan.first()
