@@ -25,9 +25,9 @@
     * [`-name`](#-name-single-dash)
     * [`-resume`](#-resume-single-dash)
     * [`-c`](#-c-single-dash)
-    * [`--max_memory`](#--max_memory)
-    * [`--max_time`](#--max_time)
-    * [`--max_cpus`](#--max_cpus)
+    * [`--maxMemory`](#--maxMemory)
+    * [`--maxTime`](#--maxTime)
+    * [`--maxCpus`](#--maxCpus)
     * [`--multiqc_config`](#--multiqc_config)
 
 
@@ -219,17 +219,17 @@ Specify the path to a specific config file (this is a core NextFlow command).
 
 Note - you can use this to override pipeline defaults.
 
-### `--max_memory`
+### `--maxMemory`
 Use to set a top-limit for the default memory requirement for each process.
-Should be a string in the format integer-unit. eg. `--max_memory '8.GB'`
+Should be a string in the format integer-unit. eg. `--maxMemory '8.GB'`
 
-### `--max_time`
+### `--maxTime`
 Use to set a top-limit for the default time requirement for each process.
-Should be a string in the format integer-unit. eg. `--max_time '2.h'`
+Should be a string in the format integer-unit. eg. `--maxTime '2.h'`
 
-### `--max_cpus`
+### `--maxCpus`
 Use to set a top-limit for the default CPU requirement for each process.
-Should be a string in the format integer-unit. eg. `--max_cpus 1`
+Should be a string in the format integer-unit. eg. `--maxCpus 1`
 
 ### `--multiqc_config`
 Specify a path to a custom MultiQC configuration file.
