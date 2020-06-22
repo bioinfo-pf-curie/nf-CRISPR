@@ -112,14 +112,11 @@ if (params.libraryList){
 
 // Has the run name been specified by the user?
 //  this has the bonus effect of catching both -name and --name
-customRunName = params.name
-if( !(workflow.runName ==~ /[a-z]+_[a-z]+/) ){
-  customRunName = workflow.runName
-}
+customRunName = !(workflow.runName ==~ /[a-z]+_[a-z]+/) ? workflow.runName: params.name
 
 // Stage config files
-chMultiqcConfig = Channel.fromPath(params.multiqcConfig)
-chOutputDocs = Channel.fromPath("$baseDir/docs/output.md")
+multiqcConfigCh = Channel.fromPath(params.multiqcConfig)
+outputDocsCh = Channel.fromPath("$baseDir/docs/output.md")
 
 /*
  * CHANNELS
@@ -133,11 +130,11 @@ if (!params.libraryDesign && params.library){
   designPath = params.library ? params.libraries[ params.library ].design ?: false : false
   Channel.fromPath( designPath )
       .ifEmpty { exit 1, "Reference library not found: ${designPath}" }
-      .set { chLibraryCsv }
+      .set { libraryCsvCh }
 }else if ( params.libraryDesign ){
   Channel.fromPath( params.libraryDesign )
       .ifEmpty { exit 1, "Reference library not found: ${params.libraryDesign}" }
-      .set { chLibraryCsv }
+      .set { libraryCsvCh }
 }else{
   exit 1, "No library detected. See the '--libraryList', '--library' or '--libraryDesign' parameters.}"
 }
@@ -153,13 +150,13 @@ if(params.samplePlan){
          .from(file("${params.samplePlan}"))
          .splitCsv(header: false)
          .map{ row -> [ row[0], [file(row[2])]] }
-         .into {chReadsFastqc; chReadsGunzip}
+         .into {readsFastqcCh; readsGunzipCh}
    }else{
       Channel
          .from(file("${params.samplePlan}"))
          .splitCsv(header: false)
          .map{ row -> [ row[0], [file(row[2]), file(row[3])]] }
-         .into {chReadsFastqc; chReadsGunzip}
+         .into {readsFastqcCh; readsGunzipCh}
    }
    params.reads=false
 }
@@ -169,19 +166,19 @@ else if(params.readPaths){
             .from(params.readPaths)
             .map { row -> [ row[0], [file(row[1][0])]] }
             .ifEmpty { exit 1, "params.readPaths was empty - no input files supplied" }
-            .into {chReadsFastqc; chReadsGunzip}
+            .into {readsFastqcCh; readsGunzipCh}
     } else {
         Channel
             .from(params.readPaths)
             .map { row -> [ row[0], [file(row[1][0]), file(row[1][1])]] }
             .ifEmpty { exit 1, "params.readPaths was empty - no input files supplied" }
-            .into {chReadsFastqc; chReadsGunzip}
+            .into {readsFastqcCh; readsGunzipCh}
     }
 } else {
     Channel
         .fromFilePairs( params.reads, size: params.singleEnd ? 1 : 2 )
         .ifEmpty { exit 1, "Cannot find any reads matching: ${params.reads}\nNB: Path needs to be enclosed in quotes!\nNB: Path requires at least one * wildcard!\nIf this is single-end data, please specify --singleEnd on the command line." }
-        .into {chReadsFastqc; chReadsGunzip}
+        .into {readsFastqcCh; readsGunzipCh}
 }
 
 /*
@@ -189,7 +186,7 @@ else if(params.readPaths){
  */
 
 if (params.samplePlan){
-  chSplan = Channel.fromPath(params.samplePlan)
+  samplePlanCh = Channel.fromPath(params.samplePlan)
 }else{
   if (params.singleEnd){
     Channel
@@ -197,14 +194,14 @@ if (params.samplePlan){
        .collectFile() {
          item -> ["sample_plan.csv", item[0] + ',' + item[0] + ',' + item[1][0] + '\n']
         }
-       .set{ chSplan }
+       .set{ samplePlanCh }
   }else{
      Channel
        .from(params.readPaths)
        .collectFile() {
          item -> ["sample_plan.csv", item[0] + ',' + item[0] + ',' + item[1][0] + ',' + item[1][1] + '\n']
         }
-       .set{ chSplan }
+       .set{ samplePlanCh }
   }
 }
 
@@ -219,37 +216,28 @@ log.info """=======================================================
 
 CRISPR v${workflow.manifest.version}"
 ======================================================="""
-def summary = [:]
-summary['Pipeline Name']  = 'CRISPR'
-summary['Pipeline Version'] = workflow.manifest.version
-summary['Run Name']     = customRunName ?: workflow.runName
-if (params.samplePlan) {
-   summary['SamplePlan']   = params.samplePlan
-}else{
-   summary['Reads']        = params.reads
-}
-if (params.library){
-   summary['Library Name'] = params.library
-}
-if (params.libraryDesign){
-   summary['Library Design']  = params.libraryDesign
-}else{
-   summary['Library Design']  = designPath
-}
-//summary['Fasta Ref']    = params.fasta
-summary['Count Strand'] = params.reverse ? "reverse" : "forward"
-summary['Max Memory']   = params.max_memory
-summary['Max CPUs']     = params.max_cpus
-summary['Max Time']     = params.max_time
-summary['Output dir']   = params.outdir
-summary['Working dir']  = workflow.workDir
-summary['Container Engine'] = workflow.containerEngine
-summary['Current user']   = "$USER"
-summary['Working dir']    = workflow.workDir
-summary['Output dir']     = params.outdir
-summary['Config Profile'] = workflow.profile
+def summary = [
+    'Pipeline Name': 'CRISPR',
+    'Pipeline Version': workflow.manifest.version,
+    'Run Name': customRunName ?: workflow.runName,
+    'SamplePlan': params.samplePlan ?: null,
+    'Reads': params.reads?: null ,
+    'Library Name': params.library?: null,
+    'Library Design': params.libraryDesign ?: designPath,
+    'Count Strand': params.reverse ? "reverse" : "forward",
+    'Max Memory': params.maxMemory,
+    'Max CPUs': params.maxCpus,
+    'Max Time': params.maxTime,
+    'Output dir': params.outdir,
+    'Working dir': workflow.workDir,
+    'Container Engine': workflow.containerEngine,
+    'Current user': "$USER",
+    'Working dir': workflow.workDir,
+    'Output dir': params.outdir,
+    'Config Profile': workflow.profile,
+    'E-mail Address': params.email ?: null
+].findAll{ it.value != null }
 
-if(params.email) summary['E-mail Address'] = params.email
 log.info summary.collect { k,v -> "${k.padRight(15)}: $v" }.join("\n")
 log.info "========================================="
 
@@ -273,10 +261,10 @@ process fastqc {
     !params.skipFastqc
 
     input:
-    set val(name), file(reads) from chReadsFastqc
+    set val(name), file(reads) from readsFastqcCh
 
     output:
-    set val(prefix), file("${prefix}*.{zip,html}") into fastqcResults
+    set val(prefix), file("${prefix}*.{zip,html}") into fastqcResultsCh
 
     script:
     prefix = reads[0].toString() - ~/(_1)?(_2)?(_R1)?(_R2)?(.R1)?(.R2)?(_val_1)?(_val_2)?(_trimmed)?(\.fq)?(\.fastq)?(\.gz)?$/
@@ -347,10 +335,10 @@ process gunzip {
     publishDir "${params.outdir}/gunzip", mode: 'copy'
 
     input:
-    set val(name), file(reads) from chReadsGunzip
+    set val(name), file(reads) from readsGunzipCh
 
     output:
-    set val(prefix), file("${prefix}.R1.fastq") into chReadsGunzipped
+    set val(prefix), file("${prefix}.R1.fastq") into readsGunzipedCh
 
     script:
     prefix= reads.toString() - ~/(.R1.fastq.gz)?$/
@@ -372,12 +360,12 @@ process counts {
   publishDir "${params.outdir}/counts", mode: 'copy'
 
   input:
-  set val(prefix), file(reads) from chReadsGunzipped
-  file(library) from chLibraryCsv.collect()
+  set val(prefix), file(reads) from readsGunzipedCh
+  file(library) from libraryCsvCh.collect()
 
   output:
-  file("${prefix}.counts") into countsToMerge
-  file("${prefix}.stats") into chStats
+  file("${prefix}.counts") into countsToMergeCh
+  file("${prefix}.stats") into statsCh
 
   script:
   opts = params.reverse ? "--reverse" : ''
@@ -394,7 +382,7 @@ process mergeCounts {
   publishDir "${params.outdir}/counts", mode: 'copy'
 
   input:
-  file input_counts from countsToMerge.collect()
+  file input_counts from countsToMergeCh.collect()
 
   output:
   file "tablecounts_raw.csv"
@@ -411,7 +399,7 @@ process mergeCounts {
 /* MultiQC
  */
 
-process get_software_versions {
+process getSoftwareVersions {
   label 'python'
   label 'lowCpu'
   label 'lowMem'
@@ -421,7 +409,7 @@ process get_software_versions {
   file 'v_multiqc.txt'  from multiqcVersionCh 
 
   output:
-  file 'software_versions_mqc.yaml' into software_versions_yaml
+  file 'software_versions_mqc.yaml' into softwareVersionsYamlCh
 
   script:
   """
@@ -432,7 +420,7 @@ process get_software_versions {
   """
 }
 
-process workflow_summary_mqc {  
+process workflowSummaryMqc {
   label 'onlyLinux'
   label 'lowCpu'
   label 'lowMem'
@@ -441,7 +429,7 @@ process workflow_summary_mqc {
   !params.skipMultiqc
 
   output:
-  file 'workflow_summary_mqc.yaml' into workflow_summary_yaml
+  file 'workflow_summary_mqc.yaml' into workflowSummaryYamlCh
 
   exec:
   def yaml_file = task.workDir.resolve('workflow_summary_mqc.yaml')
@@ -469,16 +457,16 @@ process multiqc {
   !params.skipMultiqc
 
   input:
-  file splan from chSplan.first()
-  file multiqc_config from chMultiqcConfig
-  file('fastqc/*') from fastqcResults.map{items->items[1]}.collect().ifEmpty([])
-  file('stats/*') from chStats.collect()
-  file ('software_versions/*') from software_versions_yaml.collect()
-  file ('workflow_summary/*') from workflow_summary_yaml.collect()
+  file splan from samplePlanCh.first()
+  file multiqc_config from multiqcConfigCh
+  file('fastqc/*') from fastqcResultsCh.map{items->items[1]}.collect().ifEmpty([])
+  file('stats/*') from statsCh.collect()
+  file ('software_versions/*') from softwareVersionsYamlCh.collect()
+  file ('workflow_summary/*') from workflowSummaryYamlCh.collect()
  
   output:
   file splan
-  file "*report.html" into multiqc_report
+  file "*report.html" into multiqcReportCh
   file "*_data"
 
   script:
@@ -495,7 +483,7 @@ process multiqc {
 /*
  * Sub-routine
  */
-process output_documentation {
+process outputDocumentation {
     label 'rmarkdown'
     label 'lowCpu'
     label 'lowMem'
@@ -503,7 +491,7 @@ process output_documentation {
     publishDir "${params.outdir}/pipeline_info", mode: 'copy'
 
     input:
-    file output_docs from chOutputDocs
+    file output_docs from outputDocsCh
 
     output:
     file "results_description.html"
@@ -518,25 +506,27 @@ workflow.onComplete {
 
     /*pipeline_report.html*/
 
-    def report_fields = [:]
-    report_fields['version'] = workflow.manifest.version
-    report_fields['runName'] = custom_runName ?: workflow.runName
-    report_fields['success'] = workflow.success
-    report_fields['dateComplete'] = workflow.complete
-    report_fields['duration'] = workflow.duration
-    report_fields['exitStatus'] = workflow.exitStatus
-    report_fields['errorMessage'] = (workflow.errorMessage ?: 'None')
-    report_fields['errorReport'] = (workflow.errorReport ?: 'None')
-    report_fields['commandLine'] = workflow.commandLine
-    report_fields['projectDir'] = workflow.projectDir
-    report_fields['summary'] = summary
-    report_fields['summary']['Date Started'] = workflow.start
-    report_fields['summary']['Date Completed'] = workflow.complete
-    report_fields['summary']['Pipeline script file path'] = workflow.scriptFile
-    report_fields['summary']['Pipeline script hash ID'] = workflow.scriptId
-    if(workflow.repository) report_fields['summary']['Pipeline repository Git URL'] = workflow.repository
-    if(workflow.commitId) report_fields['summary']['Pipeline repository Git Commit'] = workflow.commitId
-    if(workflow.revision) report_fields['summary']['Pipeline Git branch/tag'] = workflow.revision
+    def reportFields = [
+        version: workflow.manifest.version,
+        runName: customRunName ?: workflow.runName,
+        success: workflow.success,
+        dateComplete: workflow.complete,
+        duration: workflow.duration,
+        exitStatus: workflow.exitStatus,
+        errorMessage: (workflow.errorMessage ?: 'None'),
+        errorReport: (workflow.errorReport ?: 'None'),
+        commandLine: workflow.commandLine,
+        projectDir: workflow.projectDir,
+        summary: summary + [
+            'Date Started': workflow.start,
+            'Date Completed': workflow.complete,
+            'Pipeline script file path': workflow.scriptFile,
+            'Pipeline script hash ID': workflow.scriptId,
+            'Pipeline repository Git URL': workflow.repository,
+            'Pipeline repository Git Commit': workflow.commitId,
+            'Pipeline Git branch/tag': workflow.revision,
+        ].findAll{ it.value != null },
+    ]
 
     // Render the TXT template
     def engine = new groovy.text.GStringTemplateEngine()
