@@ -531,23 +531,23 @@ workflow.onComplete {
     // Render the TXT template
     def engine = new groovy.text.GStringTemplateEngine()
     def tf = new File("$baseDir/assets/oncomplete_template.txt")
-    def txt_template = engine.createTemplate(tf).make(report_fields)
-    def report_txt = txt_template.toString()
-    
+    def txtTemplate = engine.createTemplate(tf).make(reportFields)
+    def reportTxt = txtTemplate.toString()
+
     // Render the HTML template
     def hf = new File("$baseDir/assets/oncomplete_template.html")
-    def html_template = engine.createTemplate(hf).make(report_fields)
-    def report_html = html_template.toString()
+    def htmlTemplate = engine.createTemplate(hf).make(reportFields)
+    def reportHtml = htmlTemplate.toString()
 
     // Write summary e-mail HTML to a file
-    def output_d = new File( "${params.outdir}/pipeline_info/" )
-    if( !output_d.exists() ) {
-      output_d.mkdirs()
+    def outputD = new File( "${params.outdir}/pipeline_info/" )
+    if( !outputD.exists() ) {
+      outputD.mkdirs()
     }
-    def output_hf = new File( output_d, "pipeline_report.html" )
-    output_hf.withWriter { w -> w << report_html }
-    def output_tf = new File( output_d, "pipeline_report.txt" )
-    output_tf.withWriter { w -> w << report_txt }
+    def output_hf = new File( outputD, "pipeline_report.html" )
+    output_hf.withWriter { w -> w << reportHtml }
+    def output_tf = new File( outputD, "pipeline_report.txt" )
+    output_tf.withWriter { w -> w << reportTxt }
 
     /*oncomplete file*/
 
