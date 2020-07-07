@@ -49,8 +49,8 @@ Once cloned you can run the pipeline directly as above.
 
 ## Geniac
 
-This current version of the pipeline is compatible with the `geniac` utility for automatic production deployment.
-See the [`docs/geniac.md`]('geniac.md') page for details.
+This current version of the pipeline is compatible with the `geniac` utility for automatic production deployment.  
+See the [`docs/geniac.md`](geniac.md) page for details.
 
 ## Pipeline configuration
 
@@ -77,40 +77,41 @@ The required resources for each process are defined in the configuration [`conf/
 These resources are usually defined using `label` associated with the number of RAM/CPUs available for each job.
 This file can be edited if one want to change the resources allocated to a specific process.
 
-### Software deps
+### Software dependencies
 
 #### Paths
 
-As mentioned below, by default, Nextflow expects all software to be installed and available on the `PATH`.
-This path can be set using the `-profile path` and the `--globalPath PATH` option specifying where the tools are installed.
+As mentioned below, by default, Nextflow expects all software to be installed and available on the `PATH`.  
+This path can be set using the `-profile path` and the `--globalPath PATH` option specifying where the tools are installed.  
 In addition, the `-profile multipath` is available in order to specify the `PATH` for each tool, instead of a global one.
 
 #### Conda
 
-If you're not able to use Docker _or_ Singularity, you can instead use conda to manage the software requirements.
+If you're not able to use Docker _or_ Singularity, you can instead use conda to manage the software requirements.  
 This is slower and less reproducible than the above, but is still better than having to install all requirements yourself!
 The pipeline ships with a conda environment file and nextflow has built-in support for this.
+
 To use it first ensure that you have conda installed (we recommend [miniconda](https://conda.io/miniconda.html)), then follow the same pattern as above and use the flag `-profile conda`
 Note that in this case, the environment will be created in the `cache/work` folder. This folder can be changed using the ``--condaCacheDir` option.
 
-In addition to a general conda environment, this pipeline also comes with a `-profile multiconda` setting. In this case, a conda environment per process will be generated.
+In addition to a general conda environment, this pipeline also comes with a `-profile multiconda` setting. In this case, a conda environment per process will be generated.  
 This configuration is useful if different processes require different tool versions (leading to potential conda conflicts).
 
 #### Singularity
 
-Using [Singularity](http://singularity.lbl.gov/) is in general a great idea to manage environment and ensure reproducibility.
-The process is very similar: running the pipeline with the option `-profile singularity` tells Nextflow to enable singularity for this run.
-Images containing all of the software requirements can be automatically generated using the `recipes` information.
+Using [Singularity](http://singularity.lbl.gov/) is in general a great idea to manage environment and ensure reproducibility.  
+The process is very similar: running the pipeline with the option `-profile singularity` tells Nextflow to enable singularity for this run.  
+Images containing all of the software requirements can be automatically generated using the `recipes` information.  
 Once available, the user can specified where to look for the images using the option `--singularityImagePath PATH`
 
 #### Docker
 
-A generic configuration profile is available with `-profile docker`. 
+A generic configuration profile is available with `-profile docker`.   
 In this case, the pipeline will look for `Docker` images as defined in the [`conf/docker.config`](conf/docker.config)
 
 ### Cluster usage
 
-By default, we set up a `cluster` profile to execute the pipeline on a computational cluster.
+By default, we set up a `cluster` profile to execute the pipeline on a computational cluster.  
 Please, edit the `cluster.config` file to set up your own cluster configuration.
 
 ### Reference genomes

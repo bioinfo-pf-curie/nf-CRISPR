@@ -181,33 +181,41 @@ So far, the guide sequence is read in forward of the reads, and only perfect mat
 
 Look for the guide sequence in revese complement of the sequencing reads.
 
-## Profile
+## Profiles
 
 The following `-profile` are available. If no profile is specified, the pipeline will be run locally and expects all software to be installed and available on the `PATH`.
 
-  - test
+  - `test`
+  
   Set up the test dataset
 
-  - conda
-  Build a new conda environment before running the pipeline
+  - `conda`
   
-  - multiconda
-  Build a new conda environment for each process before running the pipeline
+  Build a new conda environment before running the pipeline. Use the option `--condaCacheDir` to change the default conda cache directory.
+  
+  - `multiconda`
+  
+  Build a new conda environment for each process before running the pipeline. Use the option ``--condaCacheDir` to change the default conda cache directory.
 
-  - path
-  Use a global path for all tools
+  - `path`
   
-  - multipath
-  Use the paths defined in configuration for each tool
+  Use a global path for all tools. Use the option `--globalPath` to define the path the use.
   
-  - docker
-  Use the Docker images for each process
+  - `multipath`
   
-  - singularity
-  Use the Singularity images for each process
+  Use the paths defined in configuration for each tool.
   
-  - cluster
-  Run the workflow on the cluster, instead of locally
+  - `docker`
+  
+  Use the Docker images for each process.
+  
+  - `singularity`
+  
+  Use the Singularity images for each process. Use the option `--singularityImagePath` to specify where the images are available.
+  
+  - `cluster`
+  
+  Run the workflow on the cluster, instead of locally.
 												
 
 ## Other command line parameters
