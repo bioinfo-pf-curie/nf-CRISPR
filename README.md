@@ -1,4 +1,4 @@
-# nf-CRISPR: A Nextflow-based CRISPR genome-wide screens pipeline
+# nf-CRISPR: Nextflow CRISPR genome-wide screens pipeline
 
 **Institut Curie - Bioinformatics Core Facility**
 
