@@ -14,6 +14,7 @@
     * [`--libraryDesign`](#--libraryDesign)
 * [Counts](#counts)
     * [`--reverse`](#--reverse)
+* [Profiles](#profiles)
 * [Job resources](#job-resources)
 * [Automatic resubmission](#automatic-resubmission)
 * [Custom resource requests](#custom-resource-requests)
@@ -25,9 +26,9 @@
     * [`-name`](#-name-single-dash)
     * [`-resume`](#-resume-single-dash)
     * [`-c`](#-c-single-dash)
-    * [`--max_memory`](#--max_memory)
-    * [`--max_time`](#--max_time)
-    * [`--max_cpus`](#--max_cpus)
+    * [`--maxMemory`](#--maxMemory)
+    * [`--maxTime`](#--maxTime)
+    * [`--maxCpus`](#--maxCpus)
     * [`--multiqc_config`](#--multiqc_config)
 
 
@@ -180,6 +181,43 @@ So far, the guide sequence is read in forward of the reads, and only perfect mat
 
 Look for the guide sequence in revese complement of the sequencing reads.
 
+## Profiles
+
+The following `-profile` are available. If no profile is specified, the pipeline will be run locally and expects all software to be installed and available on the `PATH`.
+
+  - `test`
+  
+  Set up the test dataset
+
+  - `conda`
+  
+  Build a new conda environment before running the pipeline. Use the option `--condaCacheDir` to change the default conda cache directory.
+  
+  - `multiconda`
+  
+  Build a new conda environment for each process before running the pipeline. Use the option ``--condaCacheDir` to change the default conda cache directory.
+
+  - `path`
+  
+  Use a global path for all tools. Use the option `--globalPath` to define the path the use.
+  
+  - `multipath`
+  
+  Use the paths defined in configuration for each tool.
+  
+  - `docker`
+  
+  Use the Docker images for each process.
+  
+  - `singularity`
+  
+  Use the Singularity images for each process. Use the option `--singularityImagePath` to specify where the images are available.
+  
+  - `cluster`
+  
+  Run the workflow on the cluster, instead of locally.
+												
+
 ## Other command line parameters
 
 ### `--skip*`
@@ -219,17 +257,17 @@ Specify the path to a specific config file (this is a core NextFlow command).
 
 Note - you can use this to override pipeline defaults.
 
-### `--max_memory`
+### `--maxMemory`
 Use to set a top-limit for the default memory requirement for each process.
-Should be a string in the format integer-unit. eg. `--max_memory '8.GB'`
+Should be a string in the format integer-unit. eg. `--maxMemory '8.GB'`
 
-### `--max_time`
+### `--maxTime`
 Use to set a top-limit for the default time requirement for each process.
-Should be a string in the format integer-unit. eg. `--max_time '2.h'`
+Should be a string in the format integer-unit. eg. `--maxTime '2.h'`
 
-### `--max_cpus`
+### `--maxCpus`
 Use to set a top-limit for the default CPU requirement for each process.
-Should be a string in the format integer-unit. eg. `--max_cpus 1`
+Should be a string in the format integer-unit. eg. `--maxCpus 1`
 
 ### `--multiqc_config`
 Specify a path to a custom MultiQC configuration file.
