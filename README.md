@@ -18,7 +18,7 @@ This pipeline was designed to process Illumina sequencing data from the Curie CR
 Briefly, it allows to calculate quality metrics and generate count tables.
 
 1. Reads quality control ([`FastQC`](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/))
-2. Count each library guides in FASTQ reads  [`R`](https://www.r-project.org/))
+2. Count each library guides in FASTQ reads  ([`R`](https://www.r-project.org/))
 3. Build report  ([`MultiQC`](http://multiqc.info/))
 
 ### Quick help
