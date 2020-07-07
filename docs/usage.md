@@ -14,6 +14,7 @@
     * [`--libraryDesign`](#--libraryDesign)
 * [Counts](#counts)
     * [`--reverse`](#--reverse)
+* [Profiles](#profiles)
 * [Job resources](#job-resources)
 * [Automatic resubmission](#automatic-resubmission)
 * [Custom resource requests](#custom-resource-requests)
@@ -179,6 +180,35 @@ So far, the guide sequence is read in forward of the reads, and only perfect mat
 ### `--reverse`
 
 Look for the guide sequence in revese complement of the sequencing reads.
+
+## Profile
+
+The following `-profile` are available. If no profile is specified, the pipeline will be run locally and expects all software to be installed and available on the `PATH`.
+
+  - test
+  Set up the test dataset
+
+  - conda
+  Build a new conda environment before running the pipeline
+  
+  - multiconda
+  Build a new conda environment for each process before running the pipeline
+
+  - path
+  Use a global path for all tools
+  
+  - multipath
+  Use the paths defined in configuration for each tool
+  
+  - docker
+  Use the Docker images for each process
+  
+  - singularity
+  Use the Singularity images for each process
+  
+  - cluster
+  Run the workflow on the cluster, instead of locally
+												
 
 ## Other command line parameters
 
