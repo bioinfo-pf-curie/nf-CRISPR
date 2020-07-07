@@ -35,10 +35,8 @@ def helpMessage() {
     =======================================================
 
     Usage:
-
-    nextflow run main.nf -profile test
-    nextflow run main.nf --reads '*_R{1,2}.fastq.gz' -profile curie
-    nextflow run main.nf --samplePlan sample_plan.csv -profile curie
+    nextflow run main.nf --reads '*_R{1,2}.fastq.gz' --library 'LIBRARY'
+    nextflow run main.nf --samplePlan sample_plan.csv --library 'LIBRARY'
 
     Mandatory arguments:
       --reads                       Path to input data (must be surrounded with quotes)
@@ -63,7 +61,9 @@ def helpMessage() {
       -profile test                Set up the test dataset
       -profile conda               Build a new conda environment before running the pipeline
       -profile multiconda          Build a new conda environment for each process before running the pipeline
-      -profile toolsPath           Use the paths defined in configuration for each tool
+      -profile path                Use a global path for all tools
+      -profile multipath           Use the paths defined in configuration for each tool
+      -profile docker              Use the Docker images for each process
       -profile singularity         Use the Singularity images for each process
       -profile cluster             Run the workflow on the cluster, instead of locally
 
