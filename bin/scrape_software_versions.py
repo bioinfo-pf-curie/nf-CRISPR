@@ -9,7 +9,6 @@ regexes = {
     'Nextflow': ['v_nextflow.txt', r"(\S+)"],
     'FastQC': ['v_fastqc.txt', r"FastQC v(\S+)"],
     'Python': ['v_python.txt', r"Python (\S+)"],
-    'MultiQC': ['v_multiqc.txt', r"multiqc, version (\S+)"],
 }
 results = OrderedDict()
 results['nf-core/mypipeline'] = '<span style="color:#999999;\">N/A</span>'

@@ -265,61 +265,13 @@ process fastqc {
 
     output:
     set val(prefix), file("${prefix}*.{zip,html}") into fastqcResultsCh
+    file("v_fastqc.txt") into fastqcVersionCh
 
     script:
     prefix = reads[0].toString() - ~/(_1)?(_2)?(_R1)?(_R2)?(.R1)?(.R2)?(_val_1)?(_val_2)?(_trimmed)?(\.fq)?(\.fastq)?(\.gz)?$/
     """
-    fastqc -t ${task.cpus} -q $reads
-    """
-}
-
-/*
- * get FastQC Ver
- */
-process getFastqcVer {
-    tag "$name"
-    label 'fastqc'
-    label 'lowCpu'
-    label 'lowMem'
-
-    publishDir "${params.outdir}/fastqc_version", mode: 'copy'
-
-    when:
-    !params.skipFastqc
-
-    
-    output:
-    file("v_fastqc.txt") into fastqcVersionCh
-
-    script:
-    
-    """
     fastqc --version > v_fastqc.txt
-    """ 
-}                  
-
-/*
- * get multiQC Ver
- */
-process getMultiqcVer {
-    tag "$name"
-    label 'multiqc'
-    label 'lowCpu'
-    label 'lowMem'
-
-    publishDir "${params.outdir}/MultiQC_version/", mode: 'copy'
-
-    when:
-    !params.skipMultiqc
-
-
-    output:
-    file("v_multiqc.txt") into multiqcVersionCh
-
-    script:
-
-    """
-    multiqc --version > v_multiqc.txt
+    fastqc -t ${task.cpus} -q $reads
     """
 }
 
@@ -405,8 +357,7 @@ process getSoftwareVersions {
   label 'lowMem'
 
   input:
-  file 'v_fastqc.txt'   from fastqcVersionCh
-  file 'v_multiqc.txt'  from multiqcVersionCh 
+  file 'v_fastqc.txt' from fastqcVersionCh.first()
 
   output:
   file 'software_versions_mqc.yaml' into softwareVersionsYamlCh
