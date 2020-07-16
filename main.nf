@@ -435,7 +435,7 @@ process multiqc {
  * Sub-routine
  */
 process outputDocumentation {
-    label 'rmarkdown'
+    label 'python'
     label 'lowCpu'
     label 'lowMem'
 
@@ -449,7 +449,7 @@ process outputDocumentation {
 
     script:
     """
-    markdown_to_html.r $output_docs results_description.html
+    markdown_to_html.py $output_docs -o results_description.html
     """
 }
 
