@@ -435,7 +435,7 @@ process multiqc {
  * Sub-routine
  */
 process outputDocumentation {
-    label 'python'
+    label 'markdown'
     label 'lowCpu'
     label 'lowMem'
 
