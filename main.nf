@@ -59,12 +59,12 @@ def helpMessage() {
     Available Profiles
 
       -profile test                Set up the test dataset
-      -profile conda               Build a new conda environment before running the pipeline
-      -profile multiconda          Build a new conda environment for each process before running the pipeline
-      -profile path                Use a global path for all tools
-      -profile multipath           Use the paths defined in configuration for each tool
+      -profile conda               Build a new conda environment before running the pipeline. Use `--condaCacheDir` to define the conda cache path
+      -profile multiconda          Build a new conda environment for each process before running the pipeline. Use `--condaCacheDir` to define the conda cache path
+      -profile path                Use a global path for all tools. Use `--globalPath` to define the insallation path 
+      -profile multipath           Use the paths defined in configuration for each tool. Use `--globalPath` to define the insallation path 
       -profile docker              Use the Docker images for each process
-      -profile singularity         Use the Singularity images for each process
+      -profile singularity         Use the Singularity images for each process. Use `--singularityPath` to define the insallation path
       -profile cluster             Run the workflow on the cluster, instead of locally
 
     """.stripIndent()
