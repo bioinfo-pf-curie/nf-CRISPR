@@ -39,21 +39,25 @@ def helpMessage() {
     nextflow run main.nf --samplePlan sample_plan.csv --library 'LIBRARY'
 
     Mandatory arguments:
-      --reads                       Path to input data (must be surrounded with quotes)
-      --samplePlan                  Path to sample plan file if '--reads' is not specified
-      --library                     Library type. See --libraryList for more information
-      -profile                      Configuration profile to use. Can use multiple (comma separated)
-                                    Configuration profile to use. test / conda / toolsPath / singularity / cluster (see below)
+      --reads [file]                Path to input data (must be surrounded with quotes)
+      --samplePlan [file]           Path to sample plan file if '--reads' is not specified
+      --library [str]               Library type. See --libraryList for more information
+      -profile [str]                Configuration profile to use. Can use multiple (comma separated)
+ 
+    CRISPR library:
+      --libraryList []              List the support CRISPR library designs
+      --libraryDesign [file]        Library design file (if not supported in --libraryList)
+      --reverse [str]               Count guides on the reverse strand. Default is forward
 
-    Other options:
-      --libraryList                 List the support CRISPR library designs
-      --libraryDesign               Library design file (if not supported in --libraryList)
-      --reverse                     Count guides on the reverse strand. Default is forward
+    Skip options:        All are false by default
       --skipFastqc                  Skip quality controls on sequencing reads
       --skipMultiqc                 Skip report
-      --outdir                      The output directory where the results will be saved
-      --email                       Set this parameter to your e-mail address to get a summary e-mail with details of the run sent to you when the workflow exits
-      -name                         Name for the pipeline run. If not specified, Nextflow will automatically generate a random mnemonic
+
+    Other options:
+      --metadata [file]             Path to metadata file for MultiQC report
+      --outdir [file]               The output directory where the results will be saved
+      --email [str]                 Set this parameter to your e-mail address to get a summary e-mail with details of the run sent to you when the workflow exits
+      -name [str]                   Name for the pipeline run. If not specified, Nextflow will automatically generate a random mnemonic
  
    =======================================================
     Available Profiles
@@ -139,6 +143,12 @@ if (!params.libraryDesign && params.library){
   exit 1, "No library detected. See the '--libraryList', '--library' or '--libraryDesign' parameters.}"
 }
 
+if ( params.metadata ){
+  Channel
+    .fromPath( params.metadata )
+    .ifEmpty { exit 1, "Metadata file not found: ${params.metadata}" }
+    .set { chMetadata }
+}
 
 /*
  * Create a channel for input read files
@@ -409,6 +419,7 @@ process multiqc {
 
   input:
   file splan from samplePlanCh.first()
+  file metadata from chMetadata.ifEmpty([])
   file multiqc_config from multiqcConfigCh
   file('fastqc/*') from fastqcResultsCh.map{items->items[1]}.collect().ifEmpty([])
   file('stats/*') from statsCh.collect()

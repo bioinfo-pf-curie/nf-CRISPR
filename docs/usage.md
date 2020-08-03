@@ -5,7 +5,6 @@
 * [Introduction](#general-nextflow-info)
 * [Running the pipeline](#running-the-pipeline)
 * [Main arguments](#main-arguments)
-    * [`-profile`](#-profile-single-dash)
     * [`--reads`](#--reads)
     * [`--samplePlan`](#--samplePlan)
 * [CRISPR Libraries](#crispr-library)
@@ -61,25 +60,6 @@ results         # Finished results (configurable, see below)
 You can change the output director using the `--outdir/-w` options.
 
 ## Main arguments
-
-### `-profile`
-Use this parameter to choose a configuration profile. Profiles can give configuration presets for different compute environments. Note that multiple profiles can be loaded, for example: `-profile docker` - the order of arguments is important!
-
-If `-profile` is not specified at all the pipeline will be run locally and expects all software to be installed and available on the `PATH`.
-
-* `conda`
-    * A generic configuration profile to be used with [conda](https://conda.io/docs/)
-    * Pulls most software from [Bioconda](https://bioconda.github.io/)
-* `singularity`
-    * A generic configuration profile to be used with [Singularity](http://singularity.lbl.gov/) images
-* `toolPaths`
-    * A generic profile that use a path where all tools are expected to be installed. This path is set in the `toolPaths.conf` file.
-* `cluster`
-    * Submit the jobs to the cluster instead of running them locally
-* `test`
-    * A profile with a complete configuration for automated testing
-    * Includes links to test data so needs no other parameters
-
 
 ### `--reads`
 Use this to specify the location of your input FastQ files. For example:
@@ -183,11 +163,13 @@ Look for the guide sequence in revese complement of the sequencing reads.
 
 ## Profiles
 
-The following `-profile` are available. If no profile is specified, the pipeline will be run locally and expects all software to be installed and available on the `PATH`.
+Use this parameter to choose a configuration profile. Profiles can give configuration presets for different compute environments. Note that multiple profiles can be loaded, for example: `-profil\e docker` - the order of arguments is important!
+
+The following `-profile` are available. If `-profile` is not specified at all the pipeline will be run locally and expects all software to be installed and available on the `PATH`.
 
   - `test`
   
-  Set up the test dataset
+  A profile with a complete configuration for automated testing. It includes links to test data so needs no other parameters.
 
   - `conda`
   
@@ -215,7 +197,7 @@ The following `-profile` are available. If no profile is specified, the pipeline
   
   - `cluster`
   
-  Run the workflow on the cluster, instead of locally.
+  Submit the jobs on the cluster instead of running them locally.
 												
 
 ## Other command line parameters

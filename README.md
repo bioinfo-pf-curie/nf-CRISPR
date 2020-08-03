@@ -26,29 +26,33 @@ Briefly, it allows to calculate quality metrics and generate count tables.
 ```bash
 N E X T F L O W  ~  version 19.10.0
 Launching `main.nf` [backstabbing_roentgen] - revision: 93bf83bb3b
-nf-CRISPR v1.0
+nf-CRISPR v1.0.0
 =======================================================
 
 Usage:
-
-nextflow run main.nf --reads '*_R{1,2}.fastq.gz' --library 'LIBRARY'
-nextflow run main.nf --samplePlan sample_plan --library 'LIBRARY'
-
+	nextflow run main.nf --reads '*_R{1,2}.fastq.gz' --library 'LIBRARY'
+	nextflow run main.nf --samplePlan sample_plan.csv --library 'LIBRARY'
+			
 Mandatory arguments:
-  --reads                       Path to input data (must be surrounded with quotes)
-  --samplePlan                  Path to sample plan file if '--reads' is not specified
-  --library                     Library type. See --libraryList for more information
-  -profile                      Configuration profile to use. Can use multiple (comma separated)
-                                Configuration profile to use. test / conda / toolsPath / singularity / cluster (see below)
+	--reads [file]                Path to input data (must be surrounded with quotes)
+	--samplePlan [file]           Path to sample plan file if '--reads' is not specified
+	--library [str]               Library type. See --libraryList for more information
+	-profile [str]                Configuration profile to use. Can use multiple (comma separated)
+
+CRISPR library:
+	--libraryList []              List the support CRISPR library designs
+	--libraryDesign [file]        Library design file (if not supported in --libraryList)
+	--reverse [str]               Count guides on the reverse strand. Default is forward
+
+Skip options:        All are false by default
+	--skipFastqc                  Skip quality controls on sequencing reads
+	--skipMultiqc                 Skip report
+	
 Other options:
-  --libraryList                 List the support CRISPR library designs
-  --libraryDesign               Library design file (if not supported in --libraryList)
-  --reverse                     Count guides on the reverse strand. Default is forward
-  --skip_fastqc                 Skip quality controls on sequencing reads
-  --skip_multiqc                Skip report
-  --outdir                      The output directory where the results will be saved
-  --email                       Set this parameter to your e-mail address to get a summary e-mail with details of the run sent to you when the workflow exits
-  -name                         Name for the pipeline run. If not specified, Nextflow will automatically generate a random mnemonic
+	--metadata [file]             Path to metadata file for MultiQC report
+	--outdir [file]               The output directory where the results will be saved
+	--email [str]                 Set this parameter to your e-mail address to get a summary e-mail with details of the run sent to you when the workflow exits
+	-name [str]                   Name for the pipeline run. If not specified, Nextflow will automatically generate a random mnemonic
  
 =======================================================
 Available Profiles
