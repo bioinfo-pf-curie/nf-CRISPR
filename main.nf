@@ -398,7 +398,7 @@ process workflowSummaryMqc {
   id: 'summary'
   description: " - this information is collected when the pipeline is started."
   section_name: 'Workflow Summary'
-  section_href: 'https://gitlab.curie.fr/rnaseq'
+  section_href: 'https://gitlab.curie.fr/data-analysis/nf-CRISPR'
   plot_type: 'html'
   data: |
       <dl class=\"dl-horizontal\">
@@ -446,7 +446,7 @@ process multiqc {
  * Sub-routine
  */
 process outputDocumentation {
-    label 'python'
+    label 'markdown'
     label 'lowCpu'
     label 'lowMem'
 
@@ -527,9 +527,9 @@ workflow.onComplete {
 
     /*final logs*/
     if(workflow.success){
-        log.info "[rnaseq] Pipeline Complete"
+        log.info "[nf-CRISPR] Pipeline Complete"
     }else{
-        log.info "[rnaseq] FAILED: $workflow.runName"
+        log.info "[nf-CRISPR] FAILED: $workflow.runName"
         if( workflow.profile == 'test'){
             log.error "====================================================\n" +
                     "  WARNING! You are running with the profile 'test' only\n" +
