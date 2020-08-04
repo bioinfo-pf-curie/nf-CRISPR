@@ -522,7 +522,7 @@ workflow.onComplete {
     endSummary['Error report'] = workflow.errorReport ?: '-'
     String endWfSummary = endSummary.collect { k,v -> "${k.padRight(30, '.')}: $v" }.join("\n")
     println endWfSummary
-    String execInfo = "${fullSum}\nExecution summary\n${logSep}\n${endWfSummary}\n${logSep}\n"
+    String execInfo = "Execution summary\n${endWfSummary}\n"
     woc.write(execInfo)
 
     /*final logs*/
