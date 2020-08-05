@@ -84,7 +84,7 @@ table_cond_formatting_rules:
         pass:
             - lt: 25
         warn:
-            - lt: 40
+            - gt: 25
         fail:
             - gt: 40
 
@@ -96,6 +96,12 @@ module_order:
 
 #############################
 ## Display
+
+remove_sections:
+  - fastqc_overrepresented_sequences
+  - fastqc_status_checks
+  - fastqc_sequence_counts
+  - fastqc_sequence_duplication_levels
 
 report_section_order:
   stats:
