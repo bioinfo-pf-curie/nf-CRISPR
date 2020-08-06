@@ -376,7 +376,7 @@ process getSoftwareVersions {
   """
   echo $workflow.manifest.version > v_pipeline.txt
   echo $workflow.nextflow.version > v_nextflow.txt
-  python --version 2> v_python.txt
+  python --version > v_python.txt
   scrape_software_versions.py > software_versions_mqc.yaml
   """
 }
