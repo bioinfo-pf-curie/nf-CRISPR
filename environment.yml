@@ -1,0 +1,15 @@
+name: crispr-1.0
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - bioconda::fastqc=0.11.8=1
+  - conda-forge::python=3.7.6=cpython_h8356626_6
+  - conda-forge::pymdown-extensions=7.1
+  - conda-forge::numpy=1.18.1=py37h8960a57_1
+  - conda-forge::regex
+  - conda-forge::biopython=1.76=py37h516909a_0
+  - bioconda::multiqc=1.8=py_2
+  - conda-forge::r-base=4.0.0=hdca8982_3
+
